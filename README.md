@@ -49,10 +49,3 @@ This repository contains **GM/ID extraction data** and related Interactive scrip
    ```bash
    python gmid Python Scipts/gmid_python scripts/sky130/NMOS-LVT.py
    ```
-
----
-
-
-- Special Thanks to [**Soumya Kanta Rana**](https://www.linkedin.com/in/soumya-rana/) for the Test Bench.
-
----
