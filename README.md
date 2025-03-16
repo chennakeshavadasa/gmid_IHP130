@@ -4,7 +4,7 @@
 This repository contains **GM/ID extraction data** and related Interactive scripts to get started with gm/id based design using the **IHP130 PDK**. It enables users to perform circuit simulations, extract key transistor parameters, and generate insightful plots quickly and efficiently.  
 
 ---
-
+<!--
 ## **Installation**
 
 1. **Clone the repository**:  
@@ -49,3 +49,4 @@ This repository contains **GM/ID extraction data** and related Interactive scrip
    ```bash
    python gmid Python Scipts/gmid_python scripts/IHP130/NMOS-LVT.py
    ```
+-->
