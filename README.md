@@ -2,7 +2,7 @@
 This repository contains **GM/ID extraction data** and related interactive scripts to get started with gm/id-based design using the **IHP130 PDK**. It enables users to perform circuit simulations, extract key transistor parameters, and generate insightful plots quickly and efficiently.  
 
 ---
-
+<!-- 
 ## **Jupyter Notebook Preview**  
 
 [![View in nbviewer](https://img.shields.io/badge/Jupyter-nbviewer-orange?logo=jupyter)](https://nbviewer.org/github/chennakeshavadasa/gmid_IHP130/blob/main/IHP130_gmid_Plots.ipynb)  
