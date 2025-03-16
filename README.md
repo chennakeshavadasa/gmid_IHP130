@@ -24,7 +24,7 @@ This repository contains **GM/ID extraction data** and related Interactive scrip
 4. **Define the File Path in python Scripts**:
     For Example,
    ```
-   path = r"C:\Users\USERNAME\Downloads\SKY130\nfet3_01v8_lvt\\"
+   path = r"C:\Users\USERNAME\Downloads\IHP130\nfet3_01v8_lvt\\"
 
    ```   
 
@@ -35,7 +35,7 @@ This repository contains **GM/ID extraction data** and related Interactive scrip
 1. **Run the GM/ID scripts**:  
    Use the following command to generate the plots:  
    ```bash
-   python gmid Python Scipts/gmid_python scripts/sky130/NMOS-LVT.py
+   python gmid Python Scipts/gmid_python scripts/IHP130/NMOS-LVT.py
    ```
 
 2. **View the data**:  
@@ -47,5 +47,5 @@ This repository contains **GM/ID extraction data** and related Interactive scrip
 1. **To run a specific extraction**:  
    Run the `NMOS-LVT.py` script for example and execute:  
    ```bash
-   python gmid Python Scipts/gmid_python scripts/sky130/NMOS-LVT.py
+   python gmid Python Scipts/gmid_python scripts/IHP130/NMOS-LVT.py
    ```
