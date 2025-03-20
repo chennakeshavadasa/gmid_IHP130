@@ -3,7 +3,7 @@ from matplotlib.widgets import CheckButtons  # type: ignore
 import numpy as np
 
 # Define the path to the directory
-path = r"C:\Users\NITHIN P\Downloads\gmid_IHP130\gmid Data\HV_NMOS\\"
+path = r"C:\Users\NITHIN P\Downloads\gmid_IHP130\gmid Data\LV_PMOS\\"
 
 # Initialize lists for storing results
 vgs = [[] for _ in range(13)]
@@ -18,7 +18,7 @@ W = 2e-6  # SKY130 W
 
 # Read data from the text files
 for i in range(13):
-    filename = path + "gmid_nmos_" + str(i + 1) + "_sg13_hv_nmos_tb.txt"
+    filename = path + "gmid_pmos_" + str(i + 1) + "_sg13_lv_pmos_tb.txt"
     try:
         with open(filename, 'r') as fID:
             for line in fID:
@@ -132,22 +132,22 @@ def plot_with_checkboxes(x_data, y_data, x_label, y_label, title):
     plt.show()
 
 # Plot gm/id versus Vgs
-plot_with_checkboxes(vgs, gm_id, 'Vgs', 'gm/id', 'HV-NMOS-3.3V gm/id versus Vgs')
+plot_with_checkboxes(vgs, gm_id, 'Vgs', 'gm/id', 'LV-PMOS-1.65V gm/id versus Vgs')
 
 # Plot gm/id versus Vov
-plot_with_checkboxes(Vov, gm_id, 'Vov', 'gm/id', 'HV-NMOS-3.3V gm/id versus Vov')
+plot_with_checkboxes(Vov, gm_id, 'Vov', 'gm/id', 'LV-PMOS-1.65V gm/id versus Vov')
 
 # Plot gm/gds versus gm/id
-plot_with_checkboxes(gm_id, gm_gds, 'gm/id', 'gm/gds', 'HV-NMOS-3.3V gm/gds versus gm/id')
+plot_with_checkboxes(gm_id, gm_gds, 'gm/id', 'gm/gds', 'LV-PMOS-1.65V gm/gds versus gm/id')
 
 # Plot id/W versus gm/id
-plot_with_checkboxes(gm_id, id_W, 'gm/id', 'id/W', 'HV-NMOS-3.3V id/W versus gm/id')
+plot_with_checkboxes(gm_id, id_W, 'gm/id', 'id/W', 'LV-PMOS-1.65V id/W versus gm/id')
 
 # Plot ft = gm / Cgg versus gm/id
-plot_with_checkboxes(gm_id, ft, 'gm/id', 'ft (Hz)', 'HV-NMOS-3.3V ft versus gm/id')
+plot_with_checkboxes(gm_id, ft, 'gm/id', 'ft (Hz)', 'LV-PMOS-1.65V ft versus gm/id')
 
 # Plot Cgd / Cgg versus gm/id
-plot_with_checkboxes(gm_id, cgd_cgg, 'gm/id', 'Cgd / Cgg', 'HV-NMOS-3.3V Cgd / Cgg versus gm/id')
+plot_with_checkboxes(gm_id, cgd_cgg, 'gm/id', 'Cgd / Cgg', 'LV-PMOS-1.65V Cgd / Cgg versus gm/id')
 
 # Plot Cgs / Cgg versus gm/id
-plot_with_checkboxes(gm_id, cgs_cgg, 'gm/id', 'Cgs / Cgg', 'HV-NMOS-3.3V Cgs / Cgg versus gm/id')
+plot_with_checkboxes(gm_id, cgs_cgg, 'gm/id', 'Cgs / Cgg', 'LV-PMOS-1.65V Cgs / Cgg versus gm/id')

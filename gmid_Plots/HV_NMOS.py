@@ -151,3 +151,35 @@ plot_with_checkboxes(gm_id, cgd_cgg, 'gm/id', 'Cgd / Cgg', 'HV-NMOS-3.3V Cgd / C
 
 # Plot Cgs / Cgg versus gm/id
 plot_with_checkboxes(gm_id, cgs_cgg, 'gm/id', 'Cgs / Cgg', 'HV-NMOS-3.3V Cgs / Cgg versus gm/id')
+
+# # Combined Plot
+# def plot_all_together():
+#     fig, axs = plt.subplots(3, 3, figsize=(15, 10))
+#     fig.suptitle("HV-PMOS-3.3V gm/id plots", fontsize=16, fontweight='bold')  # Title added
+#     plot_data = [
+#         (vgs, gm_id, 'Vgs', 'gm/id'),
+#         (Vov, gm_id, 'Vov', 'gm/id'),
+#         (gm_id, gm_gds, 'gm/id', 'gm/gds'),
+#         (gm_id, id_W, 'gm/id', 'id/W'),
+#         (gm_id, ft, 'gm/id', 'ft (Hz)'),
+#         (gm_id, cgd_cgg, 'gm/id', 'Cgd / Cgg'),
+#         (gm_id, cgs_cgg, 'gm/id', 'Cgs / Cgg')
+#     ]
+
+#     for idx, ax in enumerate(axs.flat):
+#         if idx < len(plot_data):  # Only plot if data exists
+#             x, y, x_label, y_label = plot_data[idx]
+#             for i in range(min_length):
+#                 ax.plot(x[i], y[i], label=f"L={labels[i]}")
+#             ax.set_xlabel(x_label)
+#             ax.set_ylabel(y_label)
+#             ax.grid(True)
+#         else:
+#             ax.axis('off')  # Hide unused subplots
+
+#     # Unified legend at the bottom
+#     fig.legend([f"L={label}" for label in labels], loc='lower center', ncol=5, fontsize=10)
+#     plt.tight_layout(rect=[0, 0.05, 1, 0.93])  # Adjust layout to fit the title and legend
+#     plt.show()
+
+# plot_all_together()
