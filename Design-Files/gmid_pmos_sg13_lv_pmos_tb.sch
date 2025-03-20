@@ -5,76 +5,115 @@ V {}
 S {}
 E {}
 P 4 1 580 -1480 {}
-N 2080 -1370 2240 -1370 {lab=GND}
-N 710 -1370 840 -1370 {lab=GND}
-N 840 -1370 1010 -1370 {lab=GND}
-N 1010 -1370 1180 -1370 {lab=GND}
-N 1180 -1370 1320 -1370 {lab=GND}
-N 1320 -1370 1470 -1370 {lab=GND}
-N 1470 -1370 1620 -1370 {lab=GND}
-N 1620 -1370 1770 -1370 {lab=GND}
-N 1770 -1370 1920 -1370 {lab=GND}
-N 1920 -1370 2080 -1370 {lab=GND}
-N 590 -1470 590 -1370 {lab=GND}
-N 840 -1470 840 -1370 {lab=GND}
-N 1010 -1470 1010 -1370 {lab=GND}
-N 1180 -1470 1180 -1370 {lab=GND}
-N 1320 -1470 1320 -1370 {lab=GND}
-N 1470 -1470 1470 -1370 {lab=GND}
-N 1620 -1470 1620 -1370 {lab=GND}
-N 1770 -1470 1770 -1370 {lab=GND}
-N 1920 -1470 1920 -1370 {lab=GND}
-N 2080 -1470 2080 -1370 {lab=GND}
-N 2240 -1470 2240 -1370 {lab=GND}
-N 510 -1470 550 -1470 {lab=#net1}
-N 510 -1470 510 -1450 {lab=#net1}
-N 2040 -1450 2200 -1450 {lab=#net1}
-N 2200 -1470 2200 -1450 {lab=#net1}
-N 800 -1470 800 -1450 {lab=#net1}
-N 970 -1470 970 -1450 {lab=#net1}
-N 800 -1450 970 -1450 {lab=#net1}
-N 1140 -1470 1140 -1450 {lab=#net1}
-N 970 -1450 1140 -1450 {lab=#net1}
-N 1280 -1470 1280 -1450 {lab=#net1}
-N 1140 -1450 1280 -1450 {lab=#net1}
-N 1430 -1470 1430 -1450 {lab=#net1}
-N 1280 -1450 1430 -1450 {lab=#net1}
-N 1580 -1470 1580 -1450 {lab=#net1}
-N 1430 -1450 1580 -1450 {lab=#net1}
-N 1730 -1470 1730 -1450 {lab=#net1}
-N 1580 -1450 1730 -1450 {lab=#net1}
-N 1880 -1470 1880 -1450 {lab=#net1}
-N 1730 -1450 1880 -1450 {lab=#net1}
-N 2040 -1470 2040 -1450 {lab=#net1}
-N 1880 -1450 2040 -1450 {lab=#net1}
+N 510 -1470 550 -1470 {lab=VG}
+N 510 -1470 510 -1450 {lab=VG}
+N 2040 -1450 2200 -1450 {lab=VG}
+N 2200 -1470 2200 -1450 {lab=VG}
+N 800 -1470 800 -1450 {lab=VG}
+N 970 -1470 970 -1450 {lab=VG}
+N 800 -1450 970 -1450 {lab=VG}
+N 1140 -1470 1140 -1450 {lab=VG}
+N 970 -1450 1140 -1450 {lab=VG}
+N 1280 -1470 1280 -1450 {lab=VG}
+N 1140 -1450 1280 -1450 {lab=VG}
+N 1430 -1470 1430 -1450 {lab=VG}
+N 1280 -1450 1430 -1450 {lab=VG}
+N 1580 -1470 1580 -1450 {lab=VG}
+N 1430 -1450 1580 -1450 {lab=VG}
+N 1730 -1470 1730 -1450 {lab=VG}
+N 1580 -1450 1730 -1450 {lab=VG}
+N 1880 -1470 1880 -1450 {lab=VG}
+N 1730 -1450 1880 -1450 {lab=VG}
+N 2040 -1470 2040 -1450 {lab=VG}
+N 1880 -1450 2040 -1450 {lab=VG}
 N 2480 -1450 2480 -1370 {lab=GND}
-N 2480 -1580 2480 -1510 {lab=#net2}
-N 410 -1470 510 -1470 {lab=#net1}
-N 590 -1520 590 -1500 {lab=#net3}
-N 840 -1520 840 -1500 {lab=#net4}
-N 1010 -1520 1010 -1500 {lab=#net5}
-N 1180 -1520 1180 -1500 {lab=#net6}
-N 1320 -1520 1320 -1500 {lab=#net7}
-N 1470 -1520 1470 -1500 {lab=#net8}
-N 1620 -1520 1620 -1500 {lab=#net9}
-N 1770 -1520 1770 -1500 {lab=#net10}
-N 1920 -1520 1920 -1500 {lab=#net11}
-N 2080 -1520 2080 -1500 {lab=#net12}
-N 410 -1580 410 -1530 {lab=#net2}
-N 670 -1470 670 -1450 {lab=#net1}
-N 510 -1450 670 -1450 {lab=#net1}
-N 590 -1370 710 -1370 {lab=GND}
-N 710 -1470 710 -1370 {lab=GND}
-N 670 -1450 800 -1450 {lab=#net1}
-N 410 -1580 2480 -1580 {lab=#net2}
-N 2360 -1470 2360 -1370 {lab=GND}
-N 2320 -1470 2320 -1450 {lab=#net1}
-N 2240 -1520 2240 -1500 {lab=#net13}
-N 2240 -1370 2360 -1370 {lab=GND}
-N 2200 -1450 2320 -1450 {lab=#net1}
+N 2480 -1580 2480 -1510 {lab=VDD}
+N 410 -1470 510 -1470 {lab=VG}
+N 590 -1520 590 -1500 {lab=#net1}
+N 840 -1520 840 -1500 {lab=#net2}
+N 1010 -1520 1010 -1500 {lab=#net3}
+N 1180 -1520 1180 -1500 {lab=#net4}
+N 1320 -1520 1320 -1500 {lab=#net5}
+N 1470 -1520 1470 -1500 {lab=#net6}
+N 1620 -1520 1620 -1500 {lab=#net7}
+N 1770 -1520 1770 -1500 {lab=#net8}
+N 1920 -1520 1920 -1500 {lab=#net9}
+N 2080 -1520 2080 -1500 {lab=#net10}
+N 670 -1470 670 -1450 {lab=VG}
+N 510 -1450 670 -1450 {lab=VG}
 N 2360 -1370 2480 -1370 {lab=GND}
-N 710 -1520 710 -1500 {lab=#net14}
-N 2360 -1520 2360 -1500 {lab=#net15}
+N 670 -1450 800 -1450 {lab=VG}
+N 2400 -1580 2480 -1580 {lab=VDD}
+N 2320 -1470 2320 -1450 {lab=VG}
+N 2240 -1520 2240 -1500 {lab=#net11}
+N 2200 -1450 2320 -1450 {lab=VG}
+N 710 -1520 710 -1500 {lab=#net12}
+N 2360 -1520 2360 -1500 {lab=#net13}
+N 590 -1440 590 -1370 {lab=GND}
+N 710 -1440 710 -1370 {lab=GND}
+N 590 -1370 710 -1370 {lab=GND}
+N 840 -1440 840 -1370 {lab=GND}
+N 710 -1370 840 -1370 {lab=GND}
+N 1010 -1440 1010 -1370 {lab=GND}
+N 840 -1370 1010 -1370 {lab=GND}
+N 1180 -1440 1180 -1370 {lab=GND}
+N 1010 -1370 1180 -1370 {lab=GND}
+N 1320 -1440 1320 -1370 {lab=GND}
+N 1180 -1370 1320 -1370 {lab=GND}
+N 1470 -1440 1470 -1370 {lab=GND}
+N 1320 -1370 1470 -1370 {lab=GND}
+N 1620 -1440 1620 -1370 {lab=GND}
+N 1470 -1370 1620 -1370 {lab=GND}
+N 1770 -1440 1770 -1370 {lab=GND}
+N 1620 -1370 1770 -1370 {lab=GND}
+N 1920 -1440 1920 -1370 {lab=GND}
+N 1770 -1370 1920 -1370 {lab=GND}
+N 2080 -1440 2080 -1370 {lab=GND}
+N 1920 -1370 2080 -1370 {lab=GND}
+N 2240 -1440 2240 -1370 {lab=GND}
+N 2080 -1370 2240 -1370 {lab=GND}
+N 2360 -1440 2360 -1370 {lab=GND}
+N 2240 -1370 2360 -1370 {lab=GND}
+N 590 -1470 630 -1470 {lab=VDD}
+N 630 -1580 630 -1470 {lab=VDD}
+N 710 -1470 750 -1470 {lab=VDD}
+N 750 -1580 750 -1470 {lab=VDD}
+N 630 -1580 750 -1580 {lab=VDD}
+N 840 -1470 880 -1470 {lab=VDD}
+N 880 -1580 880 -1470 {lab=VDD}
+N 750 -1580 880 -1580 {lab=VDD}
+N 1010 -1470 1050 -1470 {lab=VDD}
+N 1050 -1580 1050 -1470 {lab=VDD}
+N 880 -1580 1050 -1580 {lab=VDD}
+N 1180 -1470 1220 -1470 {lab=VDD}
+N 1220 -1580 1220 -1470 {lab=VDD}
+N 1050 -1580 1220 -1580 {lab=VDD}
+N 1320 -1470 1360 -1470 {lab=VDD}
+N 1360 -1580 1360 -1470 {lab=VDD}
+N 1220 -1580 1360 -1580 {lab=VDD}
+N 1470 -1470 1510 -1470 {lab=VDD}
+N 1510 -1580 1510 -1470 {lab=VDD}
+N 1360 -1580 1510 -1580 {lab=VDD}
+N 1620 -1470 1660 -1470 {lab=VDD}
+N 1660 -1580 1660 -1470 {lab=VDD}
+N 1510 -1580 1660 -1580 {lab=VDD}
+N 1770 -1470 1810 -1470 {lab=VDD}
+N 1810 -1580 1810 -1470 {lab=VDD}
+N 1660 -1580 1810 -1580 {lab=VDD}
+N 1920 -1470 1960 -1470 {lab=VDD}
+N 1960 -1580 1960 -1470 {lab=VDD}
+N 1810 -1580 1960 -1580 {lab=VDD}
+N 2080 -1470 2120 -1470 {lab=VDD}
+N 2120 -1580 2120 -1470 {lab=VDD}
+N 1960 -1580 2120 -1580 {lab=VDD}
+N 2240 -1470 2280 -1470 {lab=VDD}
+N 2280 -1580 2280 -1470 {lab=VDD}
+N 2120 -1580 2280 -1580 {lab=VDD}
+N 2360 -1470 2400 -1470 {lab=VDD}
+N 2400 -1580 2400 -1470 {lab=VDD}
+N 2280 -1580 2400 -1580 {lab=VDD}
+N 590 -1580 630 -1580 {lab=VDD}
+N 1150 -1650 1150 -1620 {lab=VG}
 C {code_shown.sym} 0 -1980 0 0 {name=NGSPICE_SAVE only_toplevel=false value="
 .save @n.xm1.nsg13_lv_pmos[gm]
 .save @n.xm1.nsg13_lv_pmos[id]
@@ -175,7 +214,7 @@ C {code_shown.sym} 0 -1980 0 0 {name=NGSPICE_SAVE only_toplevel=false value="
 .save @n.xm13.nsg13_lv_pmos[cgs]
 .save @n.xm13.nsg13_lv_pmos[cgd]
 "}
-C {code_shown.sym} 360 -1230 0 0 {name=NGSPICE_CONTROL_STATEMENTS only_toplevel=false value="
+C {code_shown.sym} 360 -1220 0 0 {name=NGSPICE_CONTROL_STATEMENTS only_toplevel=false value="
 .option wnflag=1
 .option savecurrents 
 .temp 27
@@ -198,6 +237,12 @@ plot @n.xm10.nsg13_lv_pmos[gm]
 plot @n.xm11.nsg13_lv_pmos[gm]
 plot @n.xm12.nsg13_lv_pmos[gm]
 plot @n.xm13.nsg13_lv_pmos[gm]
+plot @n.xm1.nsg13_lv_pmos[vth]
+plot @n.xm1.nsg13_lv_pmos[ids]
+let gm1=@n.xm1.nsg1_lv_pmos[gm]
+let id1=@n.xm1.nsg1_lv_pmos[ids]
+let gmid1=gm1/id1
+plot gmid1
 
 wrdata /foss/designs/IHP130_Designs/PDK_CHAR/LV_PMOS/gmid_pmos_1_sg13_lv_pmos_tb.txt @n.xm1.nsg13_lv_pmos[gm] i(VD1) @n.xm1.nsg13_lv_pmos[vth] @n.xm1.nsg13_lv_pmos[gds] @n.xm1.nsg13_lv_pmos[cgg] @n.xm1.nsg13_lv_pmos[cgs] @n.xm1.nsg13_lv_pmos[cgd]
 wrdata /foss/designs/IHP130_Designs/PDK_CHAR/LV_PMOS/gmid_pmos_2_sg13_lv_pmos_tb.txt @n.xm2.nsg13_lv_pmos[gm] i(VD2) @n.xm2.nsg13_lv_pmos[vth] @n.xm2.nsg13_lv_pmos[gds] @n.xm2.nsg13_lv_pmos[cgg] @n.xm2.nsg13_lv_pmos[cgs] @n.xm2.nsg13_lv_pmos[cgd]
@@ -216,13 +261,13 @@ set appendwrite
 op 
 remzerovec
 write /foss/designs/IHP130_Designs/PDK_CHAR/LV_PMOS/gmid_pmos_sg13_lv_pmos_tb.raw
-quit 0
+*quit 0
 .endc
 "}
 C {title.sym} 1030 -1120 0 0 {name=l1 author="Nithin Purushothama"}
 C {gnd.sym} 1400 -1370 0 0 {name=l2 lab=GND}
 C {vsource.sym} 2480 -1480 0 0 {name=V1 value=0.825 savecurrent=false}
-C {vsource.sym} 410 -1500 0 0 {name=VGS value=0.825 savecurrent=false}
+C {vsource.sym} 1150 -1680 0 0 {name=VGS value=0.825 savecurrent=false}
 C {ammeter.sym} 590 -1550 0 0 {name=VD1 savecurrent=true spice_ignore=0}
 C {ammeter.sym} 710 -1550 0 0 {name=VD2 savecurrent=true spice_ignore=0}
 C {ammeter.sym} 840 -1550 0 0 {name=VD3 savecurrent=true spice_ignore=0}
@@ -345,3 +390,7 @@ model=sg13_lv_pmos
 spiceprefix=X
 }
 C {ammeter.sym} 2360 -1550 0 0 {name=VD13 savecurrent=true spice_ignore=0c}
+C {lab_pin.sym} 410 -1470 0 0 {name=p1 sig_type=std_logic lab=VG}
+C {lab_pin.sym} 1150 -1620 0 0 {name=p2 sig_type=std_logic lab=VG}
+C {vdd.sym} 1970 -1580 0 0 {name=l3 lab=VDD}
+C {vdd.sym} 1150 -1710 0 0 {name=l4 lab=VDD}

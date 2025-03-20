@@ -226,7 +226,7 @@ set appendwrite
 op 
 remzerovec
 write /foss/designs/IHP130_Designs/PDK_CHAR/HV_NMOS/gmid_nmos_sg13_hv_nmos_tb.raw
-quit 0
+*quit 0
 .endc
 "}
 C {sg13g2_pr/sg13_hv_nmos.sym} 730 -1470 2 1 {name=M2
