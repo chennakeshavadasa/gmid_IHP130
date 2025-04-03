@@ -7,7 +7,20 @@ This repository contains **GM/ID extraction data** and related interactive scrip
    ```bash
    git clone https://github.com/chennakeshavadasa/gmid_IHP130.git
    cd gmid_IHP130
+   ```
+
+2. **Set up a virtual Environment**
+    ```bash
+    python -m venv venv
+    venv\Scripts\activate # On Windows
+    # source venv/bin/activate # On Linux/macOS
+    ```
    
+3. **Install Dependancies**
+    ```pip
+    pip install -r requirements.txt
+    ```
+
 ## Plots
 
 - LV-NMOS (1.65V Device)
