@@ -57,8 +57,8 @@ Once the raw data is loaded, additional performance metrics are computed:
 
 - **Vov (Vgs - Vth)** – Overdrive voltage
 - **gm/ID** – Transconductance efficiency
-- **gm/gds** – Output resistance proxy
-- **id/W** – Current per unit width
+- **gm/gds** – Maximum Voltage Gain
+- **id/W** – Current Density
 - **ft** – Transit frequency
 - **Capacitance ratios** – `Cgd/Cgg` and `Cgs/Cgg`
 
