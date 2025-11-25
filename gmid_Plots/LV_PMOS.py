@@ -18,7 +18,7 @@ W = 2e-6  # SKY130 W
 
 # Read data from the text files
 for i in range(13):
-    filename = path + "gmid_pmos_" + str(i + 1) + "_sg13_lv_pmos_tb.txt"
+    filename = filename = path + f"gmid_pmos_{i + 1:02d}_sg13_lv_pmos_tb.txt"
     try:
         with open(filename, 'r') as fID:
             for line in fID:
@@ -183,3 +183,4 @@ plot_with_checkboxes(gm_id, cgs_cgg, 'gm/id', 'Cgs / Cgg', 'LV-PMOS-1.65V Cgs / 
 #     plt.show()
 
 # plot_all_together()
+
