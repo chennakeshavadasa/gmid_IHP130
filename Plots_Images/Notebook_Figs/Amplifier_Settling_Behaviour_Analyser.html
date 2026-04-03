@@ -1,0 +1,713 @@
+<!DOCTYPE html>
+<!--
+  Amplifier Settling Behaviour Analyser · CAC 2025
+  ══════════════════════════════════════════════════
+  Colab usage (two options):
+
+  Option A – inline HTML:
+    from IPython.display import HTML, display
+    display(HTML(open('settling_analyser_CAC2025.html').read()))
+
+  Option B – iframe from local file server:
+    import subprocess, IPython.display as ipd
+    subprocess.Popen(['python3','-m','http.server','8765'])
+    ipd.display(ipd.IFrame('http://localhost:8765/settling_analyser_CAC2025.html', 960, 560))
+-->
+<html lang="en">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width,initial-scale=1">
+<title>Amplifier Settling Behaviour · CAC 2025</title>
+<style>
+@import url('https://fonts.googleapis.com/css2?family=JetBrains+Mono:wght@300;400;600&family=Inter:wght@300;400;500;600;700&display=swap');
+
+:root {
+  --bg:      #09090f;
+  --bg2:     #0d0d18;
+  --bg3:     #121220;
+  --border:  #1c1c2e;
+  --border2: #262640;
+  --txt:     #e8e8f5;
+  --txt2:    #8888aa;
+  --txt3:    #50506a;
+  --accent:  #6060ff;
+  --red:     #ff4f4f;
+  --blue:    #4db8ff;
+  --green:   #22ff8a;
+  --amber:   #ffb830;
+  --purple:  #c080ff;
+}
+
+*{box-sizing:border-box;margin:0;padding:0}
+
+html,body{
+  width:100%;
+  /* Fixed height for Colab iframe embedding */
+  height:540px;
+  overflow:hidden;
+  background:var(--bg);
+  font-family:'Inter',sans-serif;
+  color:var(--txt);
+}
+
+#app{display:flex;flex-direction:column;height:540px;overflow:hidden}
+
+/* ── HEADER ──────────────────────────────────── */
+#hdr{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:8px 18px;
+  background:var(--bg2);
+  border-bottom:1px solid var(--border);
+  flex-shrink:0;gap:10px;
+}
+#hdr-left h1{
+  font-size:15px;font-weight:600;letter-spacing:-.2px;
+  background:linear-gradient(90deg,#fff,#aaaadd);
+  -webkit-background-clip:text;-webkit-text-fill-color:transparent;
+}
+#hdr-left p{
+  font-size:11px;color:var(--txt2);margin-top:2px;
+  font-family:'JetBrains Mono',monospace;
+}
+#hdr-right{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.badge{
+  font-family:'JetBrains Mono',monospace;font-size:9px;
+  padding:2px 8px;border-radius:3px;
+  border:1px solid var(--border2);
+  color:var(--txt2);background:var(--bg3);
+}
+.badge.hi{border-color:var(--accent);color:#8888ff}
+
+/* ── BODY ────────────────────────────────────── */
+#body{display:flex;flex:1;min-height:0}
+
+/* CANVAS */
+#scope-panel{
+  flex:1;min-width:0;
+  display:flex;flex-direction:column;
+  padding:10px 10px 8px 12px;gap:7px;
+}
+canvas#scope{
+  flex:1;min-height:0;border-radius:5px;
+  display:block;cursor:crosshair;
+  border:1px solid var(--border);
+  background:#000308;
+}
+
+/* TRANSPORT */
+#transport{
+  display:flex;align-items:center;gap:5px;flex-shrink:0;flex-wrap:wrap;
+}
+.btn{
+  font-size:11px;padding:5px 11px;border-radius:3px;cursor:pointer;
+  border:1px solid var(--border2);background:var(--bg3);color:var(--txt);
+  font-family:'JetBrains Mono',monospace;transition:all .12s;
+}
+.btn:hover{filter:brightness(1.2)}
+.btn.active{border-color:var(--accent);color:#aaaaff;background:#191932}
+.spd-grp{display:flex;gap:2px;margin-left:3px}
+#t-display{
+  font-family:'JetBrains Mono',monospace;font-size:12px;
+  color:var(--txt);margin-left:auto;padding:4px 10px;
+  background:var(--bg3);border:1px solid var(--border);border-radius:3px;
+  min-width:120px;text-align:right;
+}
+
+/* ── SIDEBAR ─────────────────────────────────── */
+#sidebar{
+  width:240px;flex-shrink:0;
+  border-left:1px solid var(--border);
+  overflow-y:auto;display:flex;flex-direction:column;
+  background:var(--bg2);
+}
+#sidebar::-webkit-scrollbar{width:3px}
+#sidebar::-webkit-scrollbar-thumb{background:var(--border2);border-radius:2px}
+
+.sec{padding:13px 14px;border-bottom:1px solid var(--border)}
+.sec-title{
+  font-size:10px;font-weight:700;letter-spacing:1.2px;
+  text-transform:uppercase;color:var(--txt2);margin-bottom:10px;
+}
+
+/* METRICS */
+.metrics-grid{display:grid;grid-template-columns:1fr 1fr;gap:5px}
+.metric{
+  background:var(--bg3);border-radius:4px;padding:8px 9px;
+  border:1px solid var(--border);
+}
+.metric.green{border-color:#1a4a32}
+.metric.red  {border-color:#4a1a1a}
+.metric.blue {border-color:#1a3050}
+.m-label{font-size:8px;color:var(--txt3);text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.m-val{
+  font-family:'JetBrains Mono',monospace;font-size:15px;
+  font-weight:600;line-height:1.1;color:var(--txt);
+}
+.m-val.fast{color:var(--green)}
+.m-val.slow{color:var(--red)}
+.m-val.neu {color:var(--blue)}
+.m-unit{font-size:8px;color:var(--txt3);font-weight:400;margin-left:1px}
+
+/* PHASE */
+.phase-row{
+  display:flex;align-items:flex-start;gap:8px;padding:6px 7px;
+  border-radius:3px;font-size:12px;font-weight:500;
+  color:var(--txt3);margin-bottom:3px;transition:all .2s;
+}
+.phase-row:last-child{margin-bottom:0}
+.phase-row.active{background:var(--bg3);color:var(--txt)}
+.phase-dot{width:8px;height:8px;border-radius:50%;flex-shrink:0;opacity:.2;transition:all .2s;margin-top:3px}
+.phase-row.active .phase-dot{opacity:1;box-shadow:0 0 6px currentColor}
+.phase-desc{font-size:10px;color:var(--txt3);margin-top:2px;line-height:1.5}
+
+/* LEGEND */
+.legend-item{
+  display:flex;align-items:center;gap:8px;margin-bottom:8px;font-size:12px;
+}
+.legend-item:last-child{margin-bottom:0}
+.legend-line{width:24px;height:2.5px;border-radius:1px;flex-shrink:0}
+.legend-label{color:var(--txt);line-height:1.4}
+
+/* ── FOOTER ──────────────────────────────────── */
+#footer{
+  display:flex;align-items:center;justify-content:space-between;
+  padding:5px 14px;border-top:1px solid var(--border);
+  background:var(--bg2);font-size:11px;color:var(--txt2);
+  font-family:'JetBrains Mono',monospace;flex-shrink:0;
+}
+</style>
+</head>
+<body>
+<div id="app">
+
+<!-- HEADER -->
+<div id="hdr">
+  <div id="hdr-left">
+    <h1>Amplifier Settling Behaviour Analyser</h1>
+    <p>Dynamic Amplifier vs. Linear Amplifier · CAC 2025</p>
+  </div>
+  <div id="hdr-right">
+    <span class="badge hi">IHP SG13G2</span>
+    <span class="badge">CAC 2025</span>
+    <span class="badge">ngspice</span>
+  </div>
+</div>
+
+<!-- BODY -->
+<div id="body">
+
+  <!-- Canvas panel -->
+  <div id="scope-panel">
+    <canvas id="scope"></canvas>
+    <div id="transport">
+      <button class="btn active" id="bPl" onclick="togglePlay()">⏸ Pause</button>
+      <button class="btn" onclick="doReset()">↺ Reset</button>
+      <button class="btn" onclick="doExport()">↓ PNG</button>
+      <div class="spd-grp">
+        <button class="btn active" id="s05" onclick="setSpd(0.5,'s05')">0.5×</button>
+        <button class="btn" id="s1"  onclick="setSpd(1,'s1')">1×</button>
+        <button class="btn" id="s2"  onclick="setSpd(2,'s2')">2×</button>
+        <button class="btn" id="s5"  onclick="setSpd(5,'s5')">5×</button>
+      </div>
+      <div id="t-display">t = 0.000 s</div>
+    </div>
+  </div>
+
+  <!-- Sidebar -->
+  <div id="sidebar">
+
+    <!-- CURRENT PHASE -->
+    <div class="sec">
+      <div class="sec-title">Dynamic Amp Phase</div>
+      <div class="phase-row" id="ph0" style="color:var(--red)">
+        <div class="phase-dot" style="background:var(--red)"></div>
+        <div>
+          <div>Phase 1 — 2nd-Order</div>
+          <div class="phase-desc">Underdamped nonlinear burst; fast initial slew</div>
+        </div>
+      </div>
+      <div class="phase-row" id="ph1" style="color:var(--blue)">
+        <div class="phase-dot" style="background:var(--blue)"></div>
+        <div>
+          <div>Phase 2 — 1st-Order Tail</div>
+          <div class="phase-desc">Exponential precision settling</div>
+        </div>
+      </div>
+      <div class="phase-row" id="ph2" style="color:var(--green)">
+        <div class="phase-dot" style="background:var(--green)"></div>
+        <div>
+          <div>Steady State</div>
+          <div class="phase-desc">Within ±1% of target</div>
+        </div>
+      </div>
+    </div>
+
+    <!-- LEGEND -->
+    <div class="sec">
+      <div class="sec-title">Legend</div>
+      <div class="legend-item">
+        <div class="legend-line" style="background:var(--red)"></div>
+        <span class="legend-label">Dynamic amp · Phase 1 (2nd-order)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line" style="background:var(--blue)"></div>
+        <span class="legend-label">Dynamic amp · Phase 2 (1st-order tail)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line" style="background:var(--purple)"></div>
+        <span class="legend-label">Linear amp (2nd-order, wider τ)</span>
+      </div>
+      <div class="legend-item">
+        <div class="legend-line" style="background:var(--amber);border-top:1px dashed var(--amber)"></div>
+        <span class="legend-label">±1% settling band</span>
+      </div>
+    </div>
+
+  </div><!-- /sidebar -->
+</div><!-- /body -->
+
+<div id="footer">
+  <span id="cursor-info">Hover over plot for readout</span>
+</div>
+
+</div><!-- /app -->
+
+<script>
+// ══════════════════════════════════════════════════════════
+//  FIXED MODEL PARAMETERS
+//  Dynamic amp:  ζ_d=0.38, fn_d=12Hz, Ttrans=160ms, τ₂=35ms
+//  Linear amp:   ζ_l=0.72, fn_l=3Hz  (full 2nd-order, no phase switch)
+// ══════════════════════════════════════════════════════════
+const ZETA_D  = 0.38;    // dynamic amp damping ratio
+const FN_D    = 12;      // dynamic amp natural freq (Hz)
+const TAU2_D  = 0.035;   // dynamic amp 2nd-phase time constant (s)
+const TT      = 0.160;   // phase-switch time (s)
+
+const ZETA_L  = 0.72;    // linear amp damping ratio
+const FN_L    = 3.0;     // linear amp natural freq (Hz)
+
+const T_PULSE = 0.50;    // half-period (s)
+const T_SIM   = 1.50;    // total sim time (s)
+const DT      = 5e-4;    // time step (s)
+
+// ══════════════════════════════════════════════════════════
+//  SIMULATION
+// ══════════════════════════════════════════════════════════
+let SIM = {};
+
+function runSim() {
+  const wn_d = 2 * Math.PI * FN_D;
+  const wd_d = wn_d * Math.sqrt(1 - ZETA_D * ZETA_D);
+  const wn_l = 2 * Math.PI * FN_L;
+  const wd_l = wn_l * Math.sqrt(1 - ZETA_L * ZETA_L);
+
+  const N = Math.ceil(T_SIM / DT) + 1;
+  const t  = new Float64Array(N);
+  const yd = new Float64Array(N); // dynamic amp
+  const yl = new Float64Array(N); // linear amp
+
+  for (let i = 0; i < N; i++) t[i] = i * DT;
+
+  const NPULSE = Math.round(T_PULSE / DT);
+  const NTT    = Math.round(TT / DT);
+  const NSEGS  = 3;
+
+  let vd0 = 0, vl0 = 0;
+
+  for (let seg = 0; seg < NSEGS; seg++) {
+    const tgt    = (seg % 2 === 0) ? 1 : 0;
+    const i0     = seg * NPULSE;
+    const i1     = Math.min(N, i0 + NPULSE);
+    const swing_d = tgt - vd0;
+    const swing_l = tgt - vl0;
+
+    let vTrans = vd0, transComputed = false;
+
+    for (let i = i0; i < i1; i++) {
+      const tr = (i - i0) * DT;
+
+      // ── DYNAMIC AMP (two-phase) ──────────────────
+      if (tr <= TT) {
+        // Phase 1: 2nd-order underdamped (ζ_d, fn_d)
+        const e = Math.exp(-ZETA_D * wn_d * tr);
+        yd[i] = vd0 + swing_d * (1 - e * (Math.cos(wd_d * tr) + (ZETA_D * wn_d / wd_d) * Math.sin(wd_d * tr)));
+        if (!transComputed && i === i0 + NTT - 1) { vTrans = yd[i]; transComputed = true; }
+      } else {
+        // Phase 2: 1st-order exponential tail
+        if (!transComputed) { vTrans = yd[Math.max(i0, i - 1)]; transComputed = true; }
+        const tp = tr - TT;
+        const remSwing = tgt - vTrans;
+        yd[i] = vTrans + remSwing * (1 - Math.exp(-tp / TAU2_D));
+      }
+
+      // ── LINEAR AMP (full 2nd-order underdamped, ζ_l, fn_l) ──
+      const e2 = Math.exp(-ZETA_L * wn_l * tr);
+      yl[i] = vl0 + swing_l * (1 - e2 * (Math.cos(wd_l * tr) + (ZETA_L * wn_l / wd_l) * Math.sin(wd_l * tr)));
+    }
+
+    vd0 = yd[i1 - 1];
+    vl0 = yl[i1 - 1];
+  }
+
+  // ── METRICS removed – kept for potential future use
+  const NP0 = NPULSE;
+
+  SIM = {
+    t, yd, yl, N,
+    NPULSE: Math.round(T_PULSE / DT),
+    NTT:    Math.round(TT / DT),
+  };
+}
+
+// ══════════════════════════════════════════════════════════
+//  CANVAS / DRAWING
+// ══════════════════════════════════════════════════════════
+const canvas = document.getElementById('scope');
+const ctx    = canvas.getContext('2d');
+let DPR = 1, W = 0, H = 0, PW = 0, PH = 0;
+
+const MARGIN = { top: 28, right: 18, bottom: 40, left: 56 };
+
+// voltage display range
+const V_LO = -0.25, V_HI = 1.35, V_SPAN = V_HI - V_LO;
+
+function resize() {
+  DPR = window.devicePixelRatio || 1;
+  const r = canvas.getBoundingClientRect();
+  W = r.width; H = r.height;
+  canvas.width  = W * DPR;
+  canvas.height = H * DPR;
+  ctx.scale(DPR, DPR);
+  PW = W - MARGIN.left - MARGIN.right;
+  PH = H - MARGIN.top  - MARGIN.bottom;
+}
+
+function tx(t)  { return MARGIN.left + (t / T_SIM) * PW; }
+function ty(v)  { return MARGIN.top  + (1 - (v - V_LO) / V_SPAN) * PH; }
+function invTx(x){ return ((x - MARGIN.left) / PW) * T_SIM; }
+function invTy(y){ return V_LO + (1 - (y - MARGIN.top) / PH) * V_SPAN; }
+
+// ── MAIN DRAW ───────────────────────────────────────────
+let mouseX = -1, mouseY = -1;
+
+function drawFrame(playIdx) {
+  if (W === 0) return;
+  ctx.clearRect(0, 0, W, H);
+
+  // Background
+  ctx.fillStyle = '#000308';
+  ctx.fillRect(0, 0, W, H);
+
+  // CRT vignette
+  const vig = ctx.createRadialGradient(W/2, H/2, PH*0.15, W/2, H/2, Math.max(W,H)*0.85);
+  vig.addColorStop(0, 'rgba(0,0,0,0)');
+  vig.addColorStop(1, 'rgba(0,0,28,0.5)');
+  ctx.fillStyle = vig; ctx.fillRect(0, 0, W, H);
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(MARGIN.left, MARGIN.top, PW, PH); ctx.clip();
+
+  // ── Grid
+  const tTicks = [0, 0.25, 0.5, 0.75, 1.0, 1.25, 1.5];
+  tTicks.forEach(tv => {
+    const x = tx(tv);
+    ctx.strokeStyle = 'rgba(35,35,72,0.8)'; ctx.lineWidth = 1;
+    ctx.beginPath(); ctx.moveTo(x, MARGIN.top); ctx.lineTo(x, MARGIN.top + PH); ctx.stroke();
+    for (let mt = tv + 0.05; mt < tv + 0.25 - 0.01; mt += 0.05) {
+      ctx.strokeStyle = 'rgba(22,22,48,0.5)'; ctx.lineWidth = 0.5;
+      ctx.beginPath(); ctx.moveTo(tx(mt), MARGIN.top); ctx.lineTo(tx(mt), MARGIN.top + PH); ctx.stroke();
+    }
+  });
+  const vTicks = [-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2];
+  vTicks.forEach(vv => {
+    const y = ty(vv);
+    const isMain = vv === 0 || vv === 1.0;
+    ctx.strokeStyle = isMain ? 'rgba(55,55,100,0.9)' : 'rgba(28,28,56,0.6)';
+    ctx.lineWidth = isMain ? 1 : 0.5;
+    ctx.beginPath(); ctx.moveTo(MARGIN.left, y); ctx.lineTo(MARGIN.left + PW, y); ctx.stroke();
+  });
+
+  // ── ±1% band
+  const y99 = ty(0.99), y101 = ty(1.01);
+  ctx.fillStyle = 'rgba(255,184,48,0.045)';
+  ctx.fillRect(MARGIN.left, y101, PW, y99 - y101);
+  ctx.strokeStyle = 'rgba(255,184,48,0.32)'; ctx.lineWidth = 0.8; ctx.setLineDash([4,4]);
+  ctx.beginPath(); ctx.moveTo(MARGIN.left, y99);  ctx.lineTo(MARGIN.left+PW, y99);  ctx.stroke();
+  ctx.beginPath(); ctx.moveTo(MARGIN.left, y101); ctx.lineTo(MARGIN.left+PW, y101); ctx.stroke();
+  ctx.setLineDash([]);
+
+  // ── Ttrans markers
+  for (let seg = 0; seg < 3; seg++) {
+    const ttr = seg * T_PULSE + TT;
+    if (ttr < T_SIM) {
+      const x = tx(ttr);
+      ctx.strokeStyle = 'rgba(80,80,130,0.45)'; ctx.lineWidth = 0.8; ctx.setLineDash([3,5]);
+      ctx.beginPath(); ctx.moveTo(x, MARGIN.top); ctx.lineTo(x, MARGIN.top+PH); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle = 'rgba(140,140,200,0.9)';
+      ctx.font = '10px JetBrains Mono,monospace';
+      ctx.textAlign = 'left';
+      ctx.fillText(`Ttr=${(TT*1e6).toFixed(0)}µs`, x+2, MARGIN.top+11);
+    }
+  }
+
+  const { t, yd, yl, N, NPULSE: NP, NTT: NTTI } = SIM;
+
+  // ── Ghost traces (full dim)
+  function ghost(arr, clr, lw) {
+    ctx.beginPath();
+    for (let i = 0; i < N; i++) {
+      const x = tx(t[i]), y = ty(arr[i]);
+      i === 0 ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = clr; ctx.lineWidth = lw || 1.5; ctx.stroke();
+  }
+  ghost(yl, 'rgba(192,128,255,0.42)', 1.8);
+  // dynamic ghost, phase-colored
+  for (let seg = 0; seg < 3; seg++) {
+    const i0 = seg*NP, it = Math.min(N, i0+NTTI), i1 = Math.min(N, i0+NP);
+    ctx.beginPath();
+    for (let i = i0; i < it; i++) { const x=tx(t[i]),y=ty(yd[i]); i===i0?ctx.moveTo(x,y):ctx.lineTo(x,y); }
+    ctx.strokeStyle='rgba(255,79,79,0.42)'; ctx.lineWidth=1.8; ctx.stroke();
+    ctx.beginPath();
+    for (let i = it; i < i1; i++) { const x=tx(t[i]),y=ty(yd[i]); i===it?ctx.moveTo(x,y):ctx.lineTo(x,y); }
+    ctx.strokeStyle='rgba(77,184,255,0.42)'; ctx.lineWidth=1.8; ctx.stroke();
+  }
+
+  ctx.restore();
+
+  // ── Axes
+  ctx.strokeStyle='rgba(70,70,120,0.8)'; ctx.lineWidth=1;
+  ctx.strokeRect(MARGIN.left, MARGIN.top, PW, PH);
+
+  // X labels
+  ctx.fillStyle='rgba(200,200,235,0.95)'; ctx.font='11px JetBrains Mono,monospace'; ctx.textAlign='center';
+  tTicks.forEach(tv => ctx.fillText(tv.toFixed(2)+'µs', tx(tv), MARGIN.top+PH+16));
+  ctx.fillStyle='rgba(180,180,220,0.95)'; ctx.font='12px Inter,sans-serif';
+  ctx.fillText('Time (µs)', MARGIN.left+PW/2, H-4);
+
+  // Y labels
+  ctx.textAlign='right'; ctx.font='11px JetBrains Mono,monospace'; ctx.fillStyle='rgba(200,200,235,0.95)';
+  vTicks.forEach(vv => ctx.fillText(vv.toFixed(1), MARGIN.left-6, ty(vv)+4));
+  ctx.save();
+  ctx.translate(12, MARGIN.top+PH/2); ctx.rotate(-Math.PI/2); ctx.textAlign='center';
+  ctx.font='12px Inter,sans-serif'; ctx.fillStyle='rgba(180,180,220,0.95)';
+  ctx.fillText('V_out (V)', 0, 0);
+  ctx.restore();
+
+  // Canvas title
+  ctx.textAlign='left'; ctx.font='11px JetBrains Mono,monospace';
+  ctx.fillStyle='rgba(170,170,210,0.9)';
+  ctx.fillText('Settling behaviour · Dynamic vs. Linear amplifier comparison', MARGIN.left+2, MARGIN.top-8);
+
+  // ── Animated traces (up to playIdx)
+  if (playIdx <= 0) return;
+  const TRAIL = 200;
+
+  ctx.save();
+  ctx.beginPath(); ctx.rect(MARGIN.left, MARGIN.top, PW, PH); ctx.clip();
+
+  // Linear amp animated (purple)
+  const lS = Math.max(0, playIdx - TRAIL);
+  ctx.beginPath();
+  for (let i = lS; i <= Math.min(N-1, playIdx); i++) {
+    const x=tx(t[i]), y=ty(yl[i]);
+    i===lS ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+  }
+  ctx.strokeStyle = 'rgba(192,128,255,0.88)';
+  ctx.lineWidth = 2;
+  ctx.shadowColor = 'rgba(192,128,255,0.35)';
+  ctx.shadowBlur = 7;
+  ctx.stroke(); ctx.shadowBlur=0;
+
+  // Dynamic amp animated, segment-colored
+  function drawSeg(iStart, iEnd, color, glow) {
+    if (iEnd <= iStart) return;
+    const s = Math.max(iStart, Math.max(0, playIdx - TRAIL));
+    if (s > iEnd || playIdx < iStart) return;
+    const end = Math.min(iEnd, playIdx);
+    ctx.beginPath();
+    for (let i = s; i <= end; i++) {
+      const x=tx(t[i]), y=ty(yd[i]);
+      i===s ? ctx.moveTo(x,y) : ctx.lineTo(x,y);
+    }
+    ctx.strokeStyle = color; ctx.lineWidth = 2.5;
+    ctx.shadowColor = glow; ctx.shadowBlur = 9;
+    ctx.stroke(); ctx.shadowBlur=0;
+  }
+  for (let seg = 0; seg < 3; seg++) {
+    const i0=seg*NP, it=Math.min(N,i0+NTTI), i1=Math.min(N,i0+NP);
+    drawSeg(i0, it, 'rgba(255,79,79,0.95)',  'rgba(255,79,79,0.5)');
+    drawSeg(it, i1, 'rgba(77,184,255,0.95)', 'rgba(77,184,255,0.5)');
+  }
+
+  // ── Moving dots + labels
+  if (playIdx < N) {
+    const cx_d = tx(t[playIdx]), cy_d = ty(yd[playIdx]);
+    const cx_l = tx(t[playIdx]), cy_l = ty(yl[playIdx]);
+
+    // Phase detection for dynamic amp
+    const segIdx = Math.floor(playIdx / NP);
+    const inSeg  = playIdx - segIdx * NP;
+    const inPhase = inSeg < NTTI ? 0 : 1;
+    const settled = Math.abs(yd[playIdx] - Math.round(yd[playIdx])) < 0.012;
+    const phase   = settled && inPhase === 1 ? 2 : inPhase;
+    const ptColor = ['#ff4f4f','#4db8ff','#22ff8a'][phase];
+    const ptGlow  = ['rgba(255,79,79,.6)','rgba(77,184,255,.6)','rgba(34,255,138,.6)'][phase];
+
+    // Dynamic dot
+    ctx.beginPath(); ctx.arc(cx_d, cy_d, 4.5, 0, Math.PI*2);
+    ctx.fillStyle=ptColor; ctx.shadowColor=ptGlow; ctx.shadowBlur=13;
+    ctx.fill(); ctx.shadowBlur=0;
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1; ctx.stroke();
+
+    // Linear dot
+    ctx.beginPath(); ctx.arc(cx_l, cy_l, 4, 0, Math.PI*2);
+    ctx.fillStyle='#c080ff'; ctx.shadowColor='rgba(192,128,255,.6)'; ctx.shadowBlur=11;
+    ctx.fill(); ctx.shadowBlur=0;
+    ctx.strokeStyle='#fff'; ctx.lineWidth=1; ctx.stroke();
+
+    // Live voltage labels
+    ctx.font='11px JetBrains Mono,monospace'; ctx.textAlign='left';
+    ctx.fillStyle=ptColor;
+    ctx.fillText(`D: ${yd[playIdx].toFixed(4)}V`, cx_d+8, cy_d-6);
+    ctx.fillStyle='rgba(210,160,255,0.95)';
+    ctx.fillText(`L: ${yl[playIdx].toFixed(4)}V`, cx_l+8, cy_l+15);
+
+    // Δ indicator
+    const delta = Math.abs(yd[playIdx] - yl[playIdx]);
+    if (delta > 0.008) {
+      const midY = (cy_d + cy_l) / 2;
+      ctx.strokeStyle='rgba(180,180,230,0.35)'; ctx.lineWidth=1; ctx.setLineDash([2,3]);
+      ctx.beginPath(); ctx.moveTo(cx_d-30, cy_d); ctx.lineTo(cx_d-30, cy_l); ctx.stroke();
+      ctx.setLineDash([]);
+      ctx.fillStyle='rgba(190,190,235,0.75)'; ctx.font='10px JetBrains Mono,monospace'; ctx.textAlign='right';
+      ctx.fillText(`Δ${delta.toFixed(3)}`, cx_d-32, midY+4);
+    }
+
+    // Update phase indicator
+    ['ph0','ph1','ph2'].forEach((id,idx) => {
+      document.getElementById(id).classList.toggle('active', idx===phase);
+    });
+  }
+
+  ctx.restore();
+
+  // Scanline overlay
+  ctx.save();
+  ctx.beginPath(); ctx.rect(MARGIN.left, MARGIN.top, PW, PH); ctx.clip();
+  for (let y = MARGIN.top; y < MARGIN.top+PH; y+=3) {
+    ctx.fillStyle='rgba(0,0,0,0.05)'; ctx.fillRect(MARGIN.left, y, PW, 1);
+  }
+  ctx.restore();
+
+  // ── Crosshair
+  if (mouseX>=MARGIN.left && mouseX<=MARGIN.left+PW &&
+      mouseY>=MARGIN.top  && mouseY<=MARGIN.top+PH) {
+    ctx.save();
+    ctx.beginPath(); ctx.rect(MARGIN.left, MARGIN.top, PW, PH); ctx.clip();
+    ctx.strokeStyle='rgba(160,160,220,0.22)'; ctx.lineWidth=0.8; ctx.setLineDash([3,4]);
+    ctx.beginPath(); ctx.moveTo(mouseX, MARGIN.top);  ctx.lineTo(mouseX, MARGIN.top+PH); ctx.stroke();
+    ctx.beginPath(); ctx.moveTo(MARGIN.left, mouseY); ctx.lineTo(MARGIN.left+PW, mouseY); ctx.stroke();
+    ctx.setLineDash([]);
+    ctx.restore();
+  }
+}
+
+// ══════════════════════════════════════════════════════════
+//  ANIMATION LOOP
+// ══════════════════════════════════════════════════════════
+let playing   = true;
+let speed     = 0.5;
+let playIdx   = 0;
+let lastTs    = null;
+let accumTime = 0;
+
+// Target ~9s total animation at 1×
+const MS_PER_SAMPLE_BASE = 9000 / (T_SIM / DT);
+
+function animLoop(ts) {
+  if (lastTs !== null) {
+    const dt = ts - lastTs;
+    if (playing) {
+      accumTime += dt;
+      const advance = accumTime / (MS_PER_SAMPLE_BASE / speed);
+      const steps   = Math.floor(advance);
+      accumTime -= steps * (MS_PER_SAMPLE_BASE / speed);
+      playIdx = Math.min(SIM.N - 1, playIdx + steps);
+      if (playIdx >= SIM.N - 1) {
+        setTimeout(() => { playIdx = 0; accumTime = 0; lastTs = null; }, 900);
+      }
+    }
+  }
+  lastTs = ts;
+  drawFrame(playIdx);
+  document.getElementById('t-display').textContent =
+    `t = ${(playIdx < SIM.N ? SIM.t[playIdx] : T_SIM).toFixed(3)} µs`;
+  requestAnimationFrame(animLoop);
+}
+
+// ══════════════════════════════════════════════════════════
+//  CONTROLS
+// ══════════════════════════════════════════════════════════
+function togglePlay() {
+  playing = !playing; lastTs = null; accumTime = 0;
+  const btn = document.getElementById('bPl');
+  btn.textContent = playing ? '⏸ Pause' : '▶ Play';
+  btn.classList.toggle('active', playing);
+}
+function doReset() {
+  playIdx = 0; accumTime = 0; lastTs = null;
+  if (!playing) { playing = true; document.getElementById('bPl').textContent = '⏸ Pause'; }
+}
+function doExport() {
+  const a = document.createElement('a');
+  a.download = 'settling_analyser_CAC2025.png';
+  a.href = canvas.toDataURL('image/png');
+  a.click();
+}
+function setSpd(v, id) {
+  speed = v;
+  ['s05','s1','s2','s5'].forEach(i => document.getElementById(i).classList.remove('active'));
+  document.getElementById(id).classList.add('active');
+}
+
+// ══════════════════════════════════════════════════════════
+//  MOUSE
+// ══════════════════════════════════════════════════════════
+canvas.addEventListener('mousemove', e => {
+  const r = canvas.getBoundingClientRect();
+  mouseX = e.clientX - r.left;
+  mouseY = e.clientY - r.top;
+  const mt = invTx(mouseX);
+  if (mt >= 0 && mt <= T_SIM) {
+    const idx = Math.min(SIM.N-1, Math.round(mt / DT));
+    document.getElementById('cursor-info').textContent =
+      `t=${SIM.t[idx].toFixed(3)}µs  Vd=${SIM.yd[idx].toFixed(4)}V  Vl=${SIM.yl[idx].toFixed(4)}V`;
+  }
+});
+canvas.addEventListener('mouseleave', () => {
+  mouseX = -1; mouseY = -1;
+  document.getElementById('cursor-info').textContent = 'Hover over plot for readout';
+});
+canvas.addEventListener('click', e => {
+  const r = canvas.getBoundingClientRect();
+  const mt = invTx(e.clientX - r.left);
+  if (mt >= 0 && mt <= T_SIM) {
+    playIdx = Math.min(SIM.N-1, Math.round(mt / DT));
+    accumTime = 0;
+  }
+});
+
+// ══════════════════════════════════════════════════════════
+//  INIT
+// ══════════════════════════════════════════════════════════
+window.addEventListener('resize', resize);
+setTimeout(() => {
+  resize();
+  runSim();
+  requestAnimationFrame(animLoop);
+}, 50);
+</script>
+</body>
+</html>
