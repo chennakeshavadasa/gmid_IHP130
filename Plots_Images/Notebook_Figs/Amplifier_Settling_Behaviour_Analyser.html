@@ -1,5 +1,9 @@
 <!DOCTYPE html>
 <!--
+  Visualization of amplifier settling behaviour
+  comparing dynamic (two-phase) and linear responses.
+-->
+<!--
   Amplifier Settling Behaviour Analyser · CAC 2025
   ══════════════════════════════════════════════════
   Colab usage (two options):
@@ -275,7 +279,11 @@ canvas#scope{
 <script>
 // ══════════════════════════════════════════════════════════
 //  FIXED MODEL PARAMETERS
-//  Dynamic amp:  ζ_d=0.38, fn_d=12Hz, Ttrans=160ms, τ₂=35ms
+// Step 1: Define damping ratio (ζ)
+// Step 2: Define natural frequency (f_n)
+// Step 3: Define transition time (T_t)
+// Step 4: Define settling time constants
+//  Dynamic amp:  ζ_d=0.72, fn_d=18Hz, Ttrans=160ms, τ₂=35ms
 //  Linear amp:   ζ_l=0.72, fn_l=3Hz  (full 2nd-order, no phase switch)
 // ══════════════════════════════════════════════════════════
 const ZETA_D  = 0.38;    // dynamic amp damping ratio
@@ -295,6 +303,11 @@ const DT      = 5e-4;    // time step (s)
 // ══════════════════════════════════════════════════════════
 let SIM = {};
 
+// Simulation routine:
+// Step 1: Generate time vector
+// Step 2: Compute dynamic amplifier response (two-phase)
+// Step 3: Compute linear amplifier response (second-order)
+// Step 4: Store results for plotting
 function runSim() {
   const wn_d = 2 * Math.PI * FN_D;
   const wd_d = wn_d * Math.sqrt(1 - ZETA_D * ZETA_D);
@@ -327,6 +340,8 @@ function runSim() {
       const tr = (i - i0) * DT;
 
       // ── DYNAMIC AMP (two-phase) ──────────────────
+      // Step 1: Large-signal nonlinear response
+      // Step 2: Small-signal exponential settling
       if (tr <= TT) {
         // Phase 1: 2nd-order underdamped (ζ_d, fn_d)
         const e = Math.exp(-ZETA_D * wn_d * tr);
@@ -341,6 +356,7 @@ function runSim() {
       }
 
       // ── LINEAR AMP (full 2nd-order underdamped, ζ_l, fn_l) ──
+      // Continuous second-order response
       const e2 = Math.exp(-ZETA_L * wn_l * tr);
       yl[i] = vl0 + swing_l * (1 - e2 * (Math.cos(wd_l * tr) + (ZETA_L * wn_l / wd_l) * Math.sin(wd_l * tr)));
     }
@@ -390,6 +406,11 @@ function invTy(y){ return V_LO + (1 - (y - MARGIN.top) / PH) * V_SPAN; }
 // ── MAIN DRAW ───────────────────────────────────────────
 let mouseX = -1, mouseY = -1;
 
+// Rendering routine:
+// Step 1: Draw grid and axes
+// Step 2: Plot waveforms
+// Step 3: Highlight active regions
+// Step 4: Update markers and labels
 function drawFrame(playIdx) {
   if (W === 0) return;
   ctx.clearRect(0, 0, W, H);
@@ -615,7 +636,8 @@ function drawFrame(playIdx) {
 }
 
 // ══════════════════════════════════════════════════════════
-//  ANIMATION LOOP
+// Animation control:
+// Updates time index and redraws frame continuously
 // ══════════════════════════════════════════════════════════
 let playing   = true;
 let speed     = 0.5;
@@ -648,7 +670,8 @@ function animLoop(ts) {
 }
 
 // ══════════════════════════════════════════════════════════
-//  CONTROLS
+// User controls:
+// Play/Pause, Reset, Speed adjustment, Export
 // ══════════════════════════════════════════════════════════
 function togglePlay() {
   playing = !playing; lastTs = null; accumTime = 0;
@@ -674,6 +697,8 @@ function setSpd(v, id) {
 
 // ══════════════════════════════════════════════════════════
 //  MOUSE
+// Cursor interaction:
+// Maps mouse position to time and voltage values
 // ══════════════════════════════════════════════════════════
 canvas.addEventListener('mousemove', e => {
   const r = canvas.getBoundingClientRect();
@@ -700,7 +725,8 @@ canvas.addEventListener('click', e => {
 });
 
 // ══════════════════════════════════════════════════════════
-//  INIT
+// Initialization:
+// Setup canvas, run simulation, start animation
 // ══════════════════════════════════════════════════════════
 window.addEventListener('resize', resize);
 setTimeout(() => {
@@ -711,3 +737,5 @@ setTimeout(() => {
 </script>
 </body>
 </html>
+
+"""
