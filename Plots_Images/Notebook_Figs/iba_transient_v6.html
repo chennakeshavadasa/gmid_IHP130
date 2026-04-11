@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBA Transient Response — RAMPA Visualizer</title>
+<title>IBA Transient Response — Wrøngm Visualizer</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -61,9 +61,9 @@ body{font-family:'Rajdhani',sans-serif;color:#c8e0f8;display:flex;flex-direction
 <body>
 
 <div id="hdr">
-  <div id="hdr-title">⚡ IBA — INVERTER-BASED AMPLIFIER · TRANSIENT RESPONSE</div>
+  <div id="hdr-title"> IBA — INVERTER-BASED AMPLIFIER · TRANSIENT RESPONSE</div>
   <div id="phase-badge" class="badge-nl">NON-LINEAR SETTLING</div>
-  <div id="hdr-right">IHP SG13G2 · 130 nm BiCMOS · RAMPA / CAC 2025</div>
+  <div id="hdr-right">IHP SG13G2 · 130 nm BiCMOS · Wrøngm / CAC 2025</div>
 </div>
 
 <div id="main">
@@ -96,7 +96,7 @@ body{font-family:'Rajdhani',sans-serif;color:#c8e0f8;display:flex;flex-direction
 'use strict';
 // ═══════════════════════════════════════════════════════
 //  IBA TRANSIENT RESPONSE VISUALIZER  v3
-//  RAMPA — Ron/Gm Design Methodology · CAC 2025
+//  Wrøngm — Ron/Gm Design Methodology · CAC 2025
 // ═══════════════════════════════════════════════════════
 
 // ── State  (starts PLAYING automatically) ───────────────
@@ -139,7 +139,7 @@ function lerpCol(r1,g1,b1,r2,g2,b2,f){
 }
 
 // ── Signal functions ──────────────────────────────────────
-const VX_NL_END  = 1.0-0.72*(1-Math.exp(-4.5));   // ≈0.288
+const VX_NL_END  = 0.28 + 0.72*(1-Math.exp(-4.5));   // ≈0.992 (NL endpoint, now high)
 const IOU_NL_END = Math.exp(-2.8)+0.015;           // ≈0.076
 const VOU_NL_END = 0.50*(1-Math.exp(-4.0));        // ≈0.491 (exact)
 
@@ -150,9 +150,11 @@ function sig(z){ return 1/(1+Math.exp(-z)); }
 
 function vx(t){
   const tnc=clamp(t/TNL,0,1), tlc=clamp((t-TNL)/(1-TNL),0,1);
-  const nlF=1.0-0.72*(1-Math.exp(-4.5*tnc));
-  const lsF=VX_NL_END+(0.28-VX_NL_END)*(1-Math.exp(-10*tlc));
-  const s=sig(30*(t-TNL));   // beta=30, blend window ≈ ±0.13 in t
+  // NL: fast rise from ~0.28 (large-signal) toward ~0.99 (SS plateau entry)
+  const nlF=0.28+0.72*(1-Math.exp(-4.5*tnc));
+  // LS: slow final approach to 1.0 plateau — slope-matched via sig stitch
+  const lsF=VX_NL_END+(1.0-VX_NL_END)*(1-Math.exp(-5*tlc));
+  const s=sig(30*(t-TNL));
   return (1-s)*nlF + s*lsF;
 }
 
@@ -311,8 +313,8 @@ function drawAllPlots(){
   drawPlot(ctxA,szA,{
     fn:vx, yMin:0, yMax:1.1, yDec:1,
     label:'(a)  V_X  —  Virtual Ground Voltage',
-    sub:'large-signal drop  →  small-signal plateau  (V_X_SS)',
-    refs:[{v:0.28,color:'#44bbffcc',label:'V_X_SS'},{v:1.0,color:'#ff5544cc',label:'V_X_HIGH'}]
+    sub:'large-signal rise  →  small-signal plateau  (V_X_SS)',
+    refs:[{v:0.28,color:'#ff5544cc',label:'V_X_LS'},{v:1.0,color:'#44bbffcc',label:'V_X_SS'}]
   });
   drawPlot(ctxB,szB,{
     fn:iout, yMin:-0.20, yMax:1.1, yDec:1,
