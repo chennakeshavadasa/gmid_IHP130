@@ -468,7 +468,7 @@ function drawFrame(playIdx) {
       ctx.fillStyle = 'rgba(140,140,200,0.9)';
       ctx.font = '10px JetBrains Mono,monospace';
       ctx.textAlign = 'left';
-      ctx.fillText(`Ttr=${(TT*1e6).toFixed(0)}µs`, x+2, MARGIN.top+11);
+      ctx.fillText(`Ttr=${(TT*1).toFixed(0)}µs`, x+2, MARGIN.top+11); //Has to be changed if needed
     }
   }
 
