@@ -1,0 +1,274 @@
+
+<style>
+  .cmp-wrap {{
+    font-family: "Times New Roman", Times, serif;
+    font-size: 9.5pt;
+    color: #000;
+    max-width: 820px;
+    margin: 0 auto;
+  }}
+  .cmp-caption {{
+    text-align: center;
+    font-size: 9pt;
+    margin-bottom: 6px;
+    line-height: 1.5;
+  }}
+  .cmp-caption .lbl {{
+    font-variant: small-caps;
+    font-weight: bold;
+    letter-spacing: .04em;
+  }}
+  .cmp-wrap table {{
+    width: 100%;
+    border-collapse: collapse;
+    border-top: 1.8px solid #000;
+    border-bottom: 1.8px solid #000;
+  }}
+  .cmp-wrap thead tr th {{
+    border-bottom: 1px solid #000;
+    text-align: center;
+    font-size: 9pt;
+    font-weight: bold;
+    padding: 6px 8px 5px;
+    line-height: 1.4;
+    vertical-align: bottom;
+  }}
+  .cmp-wrap thead th.th-c  {{ text-align:left; width:36%; border-right:1px solid #000; }}
+  .cmp-wrap thead th.th-r  {{ width:21%; border-right:1px solid #000; background:#f5f5f5; }}
+  .cmp-wrap thead th.th-g  {{ width:20%; border-right:1px solid #000; }}
+  .cmp-wrap thead th.th-k  {{ width:23%; }}
+  .cmp-wrap tr.sec-head td {{
+    background: #000;
+    color: #fff;
+    font-weight: bold;
+    font-size: 8.5pt;
+    font-variant: small-caps;
+    letter-spacing: .07em;
+    padding: 3px 8px;
+  }}
+  .cmp-wrap tr.dr td {{
+    padding: 5px 8px;
+    vertical-align: middle;
+    line-height: 1.4;
+    border-bottom: 0.5px solid #ccc;
+  }}
+  .cmp-wrap tr.dr:last-child td {{ border-bottom: none; }}
+  .cmp-wrap tr.dr td.cr  {{ border-right:1px solid #000; font-size:9pt; vertical-align:middle; }}
+  .cmp-wrap tr.dr td.ro  {{ text-align:center; border-right:1px solid #000; background:#fafafa; vertical-align:middle; }}
+  .cmp-wrap tr.dr td.gm  {{ text-align:center; border-right:1px solid #000; vertical-align:middle; }}
+  .cmp-wrap tr.dr td.co  {{ text-align:center; vertical-align:middle; }}
+  .cmp-wrap .note        {{ display:block; font-size:8pt; color:#333; margin-top:3px; font-style:italic; }}
+  .cmp-wrap .fn          {{ margin-top:5px; font-size:7.5pt; line-height:1.6; border-top:.75px solid #000; padding-top:4px; }}
+  .cmp-wrap .fn p        {{ margin-bottom:1px; }}
+</style>
+
+<div class="cmp-wrap">
+
+<div class="cmp-caption">
+  <span class="lbl">Table I</span><br>
+  Comparison of Design Methodologies for Inverter-Based Dynamic Amplifiers
+</div>
+
+<table>
+<thead>
+  <tr>
+    <th class="th-c">Design Criterion</th>
+    <th class="th-r"><i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> &nbsp;<b>(This Work)</b></th>
+    <th class="th-g"><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub><br>Methodology</th>
+    <th class="th-k">Conrad <i>et al.</i><br>[TCAS-I 2020]</th>
+  </tr>
+</thead>
+<tbody>
+
+<!-- ── I. METHODOLOGY ── -->
+<tr class="sec-head"><td colspan="4">I. &nbsp;Methodology</td></tr>
+
+<tr class="dr">
+  <td class="cr">Design paradigm</td>
+  <td class="ro">Analytical LUT<br><span class="note">Physics-based; pre-characterised</span></td>
+  <td class="gm">Analytical LUT<br><span class="note">Small-signal only</span></td>
+  <td class="co">Simulation-based<br>numerical optimizer<br><span class="note">Cadence ADE XL</span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Primary design parameter</td>
+  <td class="ro"><i>R</i><sub>on</sub>/<i>g</i><sub>m</sub><br><span class="note">Couples large-signal + small-signal</span></td>
+  <td class="gm"><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub><br><span class="note">Small-signal only</span></td>
+  <td class="co"><i>m</i><sub>a1</sub>, <i>m</i><sub>a2</sub>, <i>m</i><sub>a3</sub>, <i>I</i><sub>bias</sub>, <i>R</i>, <i>C</i><sub>az</sub><br><span class="note">6 numerical params; no physical link</span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Design entry stage</td>
+  <td class="ro">Pre-simulation</td>
+  <td class="gm">Pre-simulation<br><span class="note">Partial — no large-signal info</span></td>
+  <td class="co">Requires full transient<br>simulation per iteration</td>
+</tr>
+
+<!-- ── II. SETTLING PHASE COVERAGE ── -->
+<tr class="sec-head"><td colspan="4">II. &nbsp;Settling Phase Coverage</td></tr>
+
+<tr class="dr">
+  <td class="cr">Non-linear (large-signal / RC) settling characterized</td>
+  <td class="ro">{HAPPY}<br><span class="note">Via <i>R</i><sub>on</sub> in LUT; &nbsp;<i>τ</i><sub>ls</sub> = <i>R</i><sub>on</sub><i>C</i><sub>L</sub></span></td>
+  <td class="gm">{SAD}<br><span class="note"><i>R</i><sub>on</sub> absent from<br><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> framework</span></td>
+  <td class="co">{SAD}<br><span class="note">Acknowledged as<br>"not practical" [1]<sup>†</sup></span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Small-signal (<i>g</i><sub>m</sub><i>C</i>) settling characterized</td>
+  <td class="ro">{HAPPY}<br><span class="note">Via <i>g</i><sub>m,bias</sub> in LUT;<br><i>BW</i> = <i>g</i><sub>m</sub>/(2π<i>C</i><sub>L</sub>)</span></td>
+  <td class="gm">{HAPPY}<br><span class="note">Primary strength of<br><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> methodology</span></td>
+  <td class="co">{HAPPY}<br><span class="note">Via rms error cost function</span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Unified two-phase settling model</td>
+  <td class="ro">{HAPPY}<br><span class="note"><i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> co-constrains<br>both <i>τ</i><sub>ls</sub> and <i>τ</i><sub>ss</sub></span></td>
+  <td class="gm">{SAD}<br><span class="note">Single-phase exponential only</span></td>
+  <td class="co">{SAD}<br><span class="note">No time-budget allocation<br>between phases</span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Peak slew current <i>I</i><sub>peak</sub> predicted pre-simulation</td>
+  <td class="ro">{HAPPY}<br><span class="note"><i>I</i><sub>peak</sub> ∝ 1/(<i>R</i><sub>on</sub>/<i>g</i><sub>m</sub>);<br>log-log slope = −1</span></td>
+  <td class="gm">{SAD}</td>
+  <td class="co">{SAD}<br><span class="note">Post-optimization<br>verification only</span></td>
+</tr>
+
+<!-- ── III. PROCESS CORNER ROBUSTNESS ── -->
+<tr class="sec-head"><td colspan="4">III. &nbsp;Process Corner Robustness</td></tr>
+
+<tr class="dr">
+  <td class="cr">TT / SS / FF corners visible at design entry</td>
+  <td class="ro">{HAPPY}<br><span class="note">All 3 corners in LUT;<br>SS worst-case directly readable</span></td>
+  <td class="gm">{SAD}<br><span class="note">LUT can be corner-swept<br>but <i>R</i><sub>on</sub> not extracted</span></td>
+  <td class="co">{SAD}<br><span class="note">PVT excluded from<br>optimizer loop<sup>‡</sup></span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Deadzone bias (<i>V</i><sub>DZN</sub>, <i>V</i><sub>DZP</sub>) determined pre-simulation</td>
+  <td class="ro">{HAPPY}<br><span class="note">Per-corner, from<br><i>V</i><sub>bias</sub> vs <i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> plot<sup>§</sup></span></td>
+  <td class="gm">{SAD}<br><span class="note">Unknown without iterative<br>transient corner sweeps</span></td>
+  <td class="co">{SAD}<br><span class="note"><i>V</i><sub>os</sub> is one of 6 optimized<br>params; corner sensitivity<br>unknown a priori</span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">SS-corner <i>R</i><sub>on</sub> degradation visible a priori</td>
+  <td class="ro">{HAPPY}</td>
+  <td class="gm">{SAD}</td>
+  <td class="co">{SAD}</td>
+</tr>
+
+<!-- ── IV. DESIGN EQUATIONS AND INSIGHT ── -->
+<tr class="sec-head"><td colspan="4">IV. &nbsp;Design Equations and Physical Insight</td></tr>
+
+<tr class="dr">
+  <td class="cr">Closed-form design equations available</td>
+  <td class="ro">{HAPPY}<br><span class="note"><i>V</i><sub>bias</sub> = <i>V</i><sub>TH</sub> + 2<i>I</i><sub>D</sub>/<i>g</i><sub>m</sub>;<br><i>g</i><sub>m,bias</sub> ∝ (<i>R</i><sub>on</sub>/<i>g</i><sub>m</sub>)<sup>−1/3</sup>;<br><i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> ∝ <i>L</i><sup>2</sup>/(<i>WI</i><sub>D</sub>)</span></td>
+  <td class="gm">{HAPPY}<br><span class="note">For small-signal:<br><i>G</i><sub>m</sub> = 2π<i>fC</i><sub>L</sub>;<br><i>W</i> = <i>I</i><sub>D</sub>/(<i>I</i><sub>D</sub>/<i>W</i>)|<sub>LUT</sub></span></td>
+  <td class="co">{SAD}<br><span class="note">Stability criterion exists but<br>"not realizable" as design<br>equation<sup>†</sup></span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Physical insight preserved throughout design</td>
+  <td class="ro">{HAPPY}<br><span class="note">Every plot axis maps to<br>a physical quantity</span></td>
+  <td class="gm">{HAPPY}<br><span class="note">For small-signal<br>operating point</span></td>
+  <td class="co">{SAD}<br><span class="note">Optimizer returns numbers;<br>no physical link retained</span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Subsumes <i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> methodology</td>
+  <td class="ro">{HAPPY}<br><span class="note"><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> readable from<br><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> vs <i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> plot;<br>reverse not possible</span></td>
+  <td class="gm">—</td>
+  <td class="co">{SAD}</td>
+</tr>
+
+<!-- ── V. PRACTICAL DESIGN FLOW ── -->
+<tr class="sec-head"><td colspan="4">V. &nbsp;Practical Design Flow</td></tr>
+
+<tr class="dr">
+  <td class="cr">EDA tool requirement</td>
+  <td class="ro">Open-source only<br><span class="note">ngspice + Python (Colab)</span></td>
+  <td class="gm">Spectre (LUT gen.)<br><span class="note">Helper usable standalone</span></td>
+  <td class="co">Cadence Virtuoso<br>+ Spectre + ADE XL<br><span class="note">Full commercial license stack</span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Application-specific redesign required</td>
+  <td class="ro">{SAD}<br><span class="note">LUT generated once<br>per technology node</span></td>
+  <td class="gm">{SAD}<br><span class="note">LUT reusable across applications</span></td>
+  <td class="co">{HAPPY}<br><span class="note">New testbench + cost function<br>per application</span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Cost function calibration required</td>
+  <td class="ro">{SAD}</td>
+  <td class="gm">{SAD}</td>
+  <td class="co">{HAPPY}<br><span class="note">Manual ×4 adjustment<br>applied in paper<sup>¶</sup></span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">PVT robustness in design loop</td>
+  <td class="ro">{HAPPY}<br><span class="note">SS/FF corner LUTs<br>included by design</span></td>
+  <td class="gm">{SAD}<br><span class="note">Corner LUT possible;<br>dynamic behavior not covered</span></td>
+  <td class="co">{SAD}<br><span class="note">Excluded from optimizer;<br>post-hoc Monte Carlo only<sup>‡</sup></span></td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Technology portability</td>
+  <td class="ro">{HAPPY}<br><span class="note">15 ngspice sims re-characterize<br>any PDK (~1 min)</span></td>
+  <td class="gm">{HAPPY}<br><span class="note">New Spectre LUT per node</span></td>
+  <td class="co">{SAD}<br><span class="note">Full optimizer rerun needed;<br>180nm fails power target by 13×<sup>**</sup></span></td>
+</tr>
+
+<!-- ── VI. DESIGN EXAMPLE ── -->
+<tr class="sec-head"><td colspan="4">VI. &nbsp;Design Example Results (IBA, 20 MHz, 1 pF, IHP SG13G2 130nm)</td></tr>
+
+<tr class="dr">
+  <td class="cr"><i>G</i><sub>m</sub> target met (20 MHz BW)</td>
+  <td class="ro">{HAPPY} &nbsp;≈128 µS</td>
+  <td class="gm">{HAPPY} &nbsp;≈128 µS</td>
+  <td class="co">{HAPPY} &nbsp;15-bit ENOB</td>
+</tr>
+
+<tr class="dr">
+  <td class="cr"><i>R</i><sub>on</sub> known before transient simulation</td>
+  <td class="ro">{HAPPY}<br><span class="note">8 kΩ unit; 2 kΩ after ×4 multiplier</span></td>
+  <td class="gm">{SAD}<br><span class="note">Post-simulation discovery only</span></td>
+  <td class="co">{SAD}</td>
+</tr>
+
+<tr class="dr">
+  <td class="cr"><i>V</i><sub>DZN</sub> (NMOS deadzone) pre-simulation</td>
+  <td class="ro">{HAPPY}<br><span class="note">FF: 0.614 V | TT: 0.658 V | SS: 0.700 V</span></td>
+  <td class="gm">{SAD}</td>
+  <td class="co">{SAD}</td>
+</tr>
+
+<tr class="dr">
+  <td class="cr"><i>V</i><sub>DZP</sub> (PMOS deadzone) pre-simulation</td>
+  <td class="ro">{HAPPY}<br><span class="note">FF: 1.070 V | TT: 1.010 V | SS: 0.959 V</span></td>
+  <td class="gm">{SAD}</td>
+  <td class="co">{SAD}</td>
+</tr>
+
+<tr class="dr">
+  <td class="cr">Extra transient sims needed to obtain <i>V</i><sub>DZ</sub> and <i>R</i><sub>on</sub></td>
+  <td class="ro">{HAPPY} &nbsp;<b>Zero</b></td>
+  <td class="gm">{SAD}<br><span class="note">Multiple corner sweeps required</span></td>
+  <td class="co">{SAD}<br><span class="note">Full optimizer run per corner</span></td>
+</tr>
+
+</tbody>
+</table>
+
+<div class="fn">
+  <p><sup>†</sup> J. Conrad <i>et al.</i>: <i>"Unfortunately, Section II-B is not really practical for designing a RAMP… This makes a design-by-equation cumbersome and not realizable."</i> [TCAS-I 2020, Sec. II-C]</p>
+  <p><sup>‡</sup> J. Conrad <i>et al.</i>: <i>"PVT variations are not encountered during the circuit optimization, because this would require many transient simulations to evaluate one iteration of the optimizer."</i> [TCAS-I 2020, Sec. V-E]</p>
+  <p><sup>§</sup> Deadzone bias values read from the <i>V</i><sub>bias</sub> vs. log(<i>R</i><sub>on</sub>/<i>g</i><sub>m</sub>) LUT plot at <i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> = 125×10<sup>6</sup>, <i>I</i><sub>bias</sub> = 1 µA.</p>
+  <p><sup>¶</sup> J. Conrad <i>et al.</i>: <i>"the optimizer goal for the accuracy was readjusted ×4 smaller, i.e. 0.25 for the cost function."</i> [TCAS-I 2020, Sec. IV-B.3]</p>
+  <p><sup>**</sup> J. Conrad <i>et al.</i>, Table II: 180 nm power cost function = 12.99 (target: 1.0), failing the power constraint by 13×.</p>
+  <p style="margin-top:4px;">{HAPPY} = fully supported / available pre-simulation &nbsp;&nbsp; {SAD} = not available / requires post-simulation discovery</p>
+</div>
+
+</div>
