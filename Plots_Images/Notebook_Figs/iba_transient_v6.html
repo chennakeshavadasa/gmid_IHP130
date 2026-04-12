@@ -3,7 +3,7 @@
 <head>
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
-<title>IBA Transient Response — Wrøngm Visualizer</title>
+<title>IBA Transient Response — RAMPA Visualizer</title>
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root{
@@ -61,9 +61,9 @@ body{font-family:'Rajdhani',sans-serif;color:#c8e0f8;display:flex;flex-direction
 <body>
 
 <div id="hdr">
-  <div id="hdr-title"> IBA — INVERTER-BASED AMPLIFIER · TRANSIENT RESPONSE</div>
+  <div id="hdr-title">⚡ IBA — INVERTER-BASED AMPLIFIER · TRANSIENT RESPONSE</div>
   <div id="phase-badge" class="badge-nl">NON-LINEAR SETTLING</div>
-  <div id="hdr-right">IHP SG13G2 · 130 nm BiCMOS · Wrøngm / CAC 2025</div>
+  <div id="hdr-right">IHP SG13G2 · 130 nm BiCMOS · RAMPA / CAC 2025</div>
 </div>
 
 <div id="main">
@@ -96,7 +96,7 @@ body{font-family:'Rajdhani',sans-serif;color:#c8e0f8;display:flex;flex-direction
 'use strict';
 // ═══════════════════════════════════════════════════════
 //  IBA TRANSIENT RESPONSE VISUALIZER  v3
-//  Wrøngm — Ron/Gm Design Methodology · CAC 2025
+//  RAMPA — Ron/Gm Design Methodology · CAC 2025
 // ═══════════════════════════════════════════════════════
 
 // ── State  (starts PLAYING automatically) ───────────────
@@ -141,7 +141,7 @@ function lerpCol(r1,g1,b1,r2,g2,b2,f){
 // ── Signal functions ──────────────────────────────────────
 const VX_NL_END  = 0.28 + 0.72*(1-Math.exp(-4.5));   // ≈0.992 (NL endpoint, now high)
 const IOU_NL_END = Math.exp(-2.8)+0.015;           // ≈0.076
-const VOU_NL_END = 0.50*(1-Math.exp(-4.0));        // ≈0.491 (exact)
+const VOU_NL_END = 0.8100; // = vout(TNL) from two-exponential model
 
 // ── Sigmoid stitch helper (Matlab-style beta blend) ───────
 // Higher beta → sharper but smooth transition at t=TNL.
@@ -168,23 +168,16 @@ function iout(t){
   return (1-s)*nlF + s*lsF;
 }
 
-// ── Vout: C1-matched piecewise + sigmoid stitch ───────────
-// Analytically, for C1 continuity at t=TNL we need the L-phase time
-// constant k_L = dv_NL/dt|_{t=TNL} * (1-TNL) / (V_FINAL - VOU_NL_END).
-// With k_NL=4.0, A_NL=0.5, V_FINAL=0.90:
-//   dv_NL/dt = 0.5*(4.0/0.35)*exp(-4.0) ≈ 0.10466
-//   k_L = 0.10466*0.65 / (0.90-0.49084) ≈ 0.1663
-// This guarantees matched slopes at the boundary — no kink even without the stitch.
-// The sigmoid stitch (beta=40) then additionally smooths any residual curvature change.
-const K_L_VOUT  = 0.1663;   // C1-matched time constant
-const BETA_VOUT = 40;        // sigmoid sharpness (higher = crisper but still C-inf)
+// ── Vout: single two-exponential formula — C-infinity, no blending, no kink ──
+// Vout = A*(1-exp(-k1*t)) + B*(1-exp(-k2*t))
+// k1=10 (fast NL component), k2=1.2 (slow L settling component)
+// A,B solved analytically: hits V_OUT_LS=0.81 at t=TNL and V_FINAL=0.90 at t=1
+// Slope decreases smoothly: 0.38→0.17→0.10 across L phase → visibly settles
+const VOUT_A = 0.76882, VOUT_B = 0.18777;
+const VOUT_K1 = 10, VOUT_K2 = 1.2;
 
 function vout(t){
-  const tnc=clamp(t/TNL,0,1), tlc=clamp((t-TNL)/(1-TNL),0,1);
-  const nlF=0.50*(1-Math.exp(-4.0*tnc));                           // NL: fast rise
-  const lsF=VOU_NL_END+(0.90-VOU_NL_END)*(1-Math.exp(-K_L_VOUT*tlc)); // L: slope-matched
-  const s=sig(BETA_VOUT*(t-TNL));  // C-inf sigmoid stitch
-  return (1-s)*nlF + s*lsF;
+  return VOUT_A*(1-Math.exp(-VOUT_K1*t)) + VOUT_B*(1-Math.exp(-VOUT_K2*t));
 }
 
 // ── Plot drawing ─────────────────────────────────────────
@@ -237,7 +230,7 @@ function drawPlot(ctx,sz,cfg){
   const toX=ti=>x0+gW*ti;
   const toY=v=>{ const y=y0+gH*(1-(v-cfg.yMin)/(cfg.yMax-cfg.yMin)); return Math.max(y0,Math.min(y0+gH,y)); };
   const fn=cfg.fn;
-  const BW=0.05; // blend half-window
+  const BW=0.14; // wide colour gradient fade — independent of formula blend
 
   if(t>0){
     // Gradient defined over the full plot width (x0 → x0+gW = t=0 → t=1)
