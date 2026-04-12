@@ -1,303 +1,774 @@
 <!DOCTYPE html>
 <html lang="en">
-<head><meta charset="UTF-8"></head>
-<body>
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>IBA Transient Response — RAMPA Visualizer</title>
+<link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
-  .cmp-wrap {
-    font-family: "Times New Roman", Times, serif;
-    font-size: 9.5pt;
-    color: #000;
-    max-width: 820px;
-    margin: 0 auto;
-  }
-  .cmp-caption {
-    text-align: center;
-    font-size: 9pt;
-    margin-bottom: 6px;
-    line-height: 1.5;
-  }
-  .cmp-caption .lbl {
-    font-variant: small-caps;
-    font-weight: bold;
-    letter-spacing: .04em;
-  }
-  .cmp-wrap table {
-    width: 100%;
-    border-collapse: collapse;
-    border-top: 1.8px solid #000;
-    border-bottom: 1.8px solid #000;
-  }
-  .cmp-wrap thead tr th {
-    border-bottom: 1px solid #000;
-    text-align: center;
-    font-size: 9pt;
-    font-weight: bold;
-    padding: 6px 8px 5px;
-    line-height: 1.4;
-    vertical-align: bottom;
-  }
-  .cmp-wrap thead th.th-c  { text-align:left; width:36%; border-right:1px solid #000; }
-  .cmp-wrap thead th.th-r  { width:21%; border-right:1px solid #000; background:#f5f5f5; }
-  .cmp-wrap thead th.th-g  { width:20%; border-right:1px solid #000; }
-  .cmp-wrap thead th.th-k  { width:23%; }
-  .cmp-wrap tr.sec-head td {
-    background: #000;
-    color: #fff;
-    font-weight: bold;
-    font-size: 8.5pt;
-    font-variant: small-caps;
-    letter-spacing: .07em;
-    padding: 3px 8px;
-  }
-  .cmp-wrap tr.dr td {
-    padding: 5px 8px;
-    vertical-align: middle;
-    line-height: 1.4;
-    border-bottom: 0.5px solid #ccc;
-  }
-  .cmp-wrap tr.dr:last-child td { border-bottom: none; }
-  .cmp-wrap tr.dr td.cr  { border-right:1px solid #000; font-size:9pt; vertical-align:middle; }
-  .cmp-wrap tr.dr td.ro  { text-align:center; border-right:1px solid #000; background:#fafafa; vertical-align:middle; }
-  .cmp-wrap tr.dr td.gm  { text-align:center; border-right:1px solid #000; vertical-align:middle; }
-  .cmp-wrap tr.dr td.co  { text-align:center; vertical-align:middle; }
-  .cmp-wrap .note        { display:block; font-size:8pt; color:#333; margin-top:3px; font-style:italic; }
-  .cmp-wrap .fn          { margin-top:5px; font-size:7.5pt; line-height:1.6; border-top:.75px solid #000; padding-top:4px; }
-  .cmp-wrap .fn p        { margin-bottom:1px; }
-  img.icon { vertical-align:middle; width:20px; height:20px; }
+:root{
+  --bg:#050911;--panel:#060c18;--border:#132244;
+  --red:#ff3322;--blue:#22aaff;--green:#33ff99;--amber:#ffcc44;--wire:#244a80;
+}
+*{margin:0;padding:0;box-sizing:border-box;}
+html,body{width:100%;height:100%;overflow:hidden;background:var(--bg);}
+body{font-family:'Rajdhani',sans-serif;color:#c8e0f8;display:flex;flex-direction:column;height:100vh;}
+
+#hdr{flex-shrink:0;height:48px;background:var(--panel);border-bottom:1px solid var(--border);
+     display:flex;align-items:center;gap:14px;padding:0 16px;}
+#hdr-title{font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;
+           color:#6ad0ff;white-space:nowrap;font-weight:bold;}
+#phase-badge{padding:4px 13px;border-radius:2px;font-size:12px;font-weight:700;
+             letter-spacing:2px;text-transform:uppercase;transition:all 0.4s;}
+.badge-nl{background:rgba(255,51,34,.22);border:1px solid var(--red);
+          color:#ff8877;box-shadow:0 0 12px rgba(255,51,34,.35);}
+.badge-l {background:rgba(34,170,255,.22);border:1px solid var(--blue);
+          color:#88ddff;box-shadow:0 0 12px rgba(34,170,255,.35);}
+#hdr-right{margin-left:auto;font-family:'Share Tech Mono',monospace;
+           font-size:11px;color:#5a8aaa;white-space:nowrap;}
+
+#main{flex:1;display:flex;min-height:0;overflow:hidden;}
+#plots-col{width:42%;flex-shrink:0;display:flex;flex-direction:column;
+           padding:7px 5px 7px 7px;gap:5px;border-right:1px solid var(--border);}
+.pw{flex:1;min-height:0;background:#030710;border:1px solid #0c1e38;
+    border-radius:2px;position:relative;overflow:hidden;}
+.pw canvas{display:block;width:100%;height:100%;}
+#circ-col{flex:1;min-width:0;position:relative;background:#040810;
+          display:flex;align-items:center;justify-content:center;overflow:hidden;}
+#cv-circ{display:block;}
+
+#ctrl{flex-shrink:0;height:52px;background:var(--panel);border-top:1px solid var(--border);
+      display:flex;align-items:center;gap:9px;padding:0 14px;}
+.btn{background:#0c1b30;border:1px solid #1a3560;color:#88bce0;padding:5px 13px;
+     border-radius:2px;cursor:pointer;font-family:'Share Tech Mono',monospace;
+     font-size:12px;letter-spacing:.5px;transition:all .15s;white-space:nowrap;flex-shrink:0;}
+.btn:hover{background:#162a50;color:#c8e8ff;}
+.btn.active{background:#183060;border-color:#2a5a9a;color:#e0f0ff;}
+.ctrl-sep{width:1px;height:28px;background:var(--border);flex-shrink:0;}
+.ctrl-lbl{font-family:'Share Tech Mono',monospace;font-size:11px;
+          color:#4a6a90;letter-spacing:1px;flex-shrink:0;}
+#tl-wrap{flex:1;height:6px;background:#0c1b30;border-radius:3px;
+         position:relative;cursor:pointer;}
+#tl-fill{height:100%;border-radius:3px;
+         background:linear-gradient(to right,var(--red) 35%,var(--blue));pointer-events:none;}
+#tl-knob{position:absolute;top:50%;width:14px;height:14px;background:#d0e8ff;
+         border-radius:50%;transform:translate(-50%,-50%);
+         box-shadow:0 0 8px rgba(100,190,255,.8);cursor:grab;pointer-events:none;}
+#time-disp{font-family:'Share Tech Mono',monospace;font-size:13px;font-weight:bold;
+           color:#80c0e8;white-space:nowrap;min-width:68px;text-align:right;flex-shrink:0;}
 </style>
+</head>
+<body>
 
-<!-- Shared icon references -->
-<template id="happy-tpl"><img class="icon" src="https://raw.githubusercontent.com/chennakeshavadasa/gmid_IHP130/refs/heads/main/Plots_Images/Notebook_Figs/happy.svg" alt="✓"></template>
-<template id="sad-tpl"><img class="icon" src="https://raw.githubusercontent.com/chennakeshavadasa/gmid_IHP130/refs/heads/main/Plots_Images/Notebook_Figs/sad.svg" alt="✗"></template>
-
-<div class="cmp-wrap">
-
-<div class="cmp-caption">
-  <span class="lbl">Table I</span><br>
-  Comparison of Design Methodologies for Inverter-Based Dynamic Amplifiers
+<div id="hdr">
+  <div id="hdr-title">⚡ IBA — INVERTER-BASED AMPLIFIER · TRANSIENT RESPONSE</div>
+  <div id="phase-badge" class="badge-nl">NON-LINEAR SETTLING</div>
+  <div id="hdr-right">IHP SG13G2 · 130 nm BiCMOS · RAMPA / CAC 2025</div>
 </div>
 
-<table>
-<thead>
-  <tr>
-    <th class="th-c">Design Criterion</th>
-    <th class="th-r"><i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> &nbsp;<b>(This Work)</b></th>
-    <th class="th-g"><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub><br>Methodology</th>
-    <th class="th-k">Conrad <i>et al.</i><br>[TCAS-I 2020]</th>
-  </tr>
-</thead>
-<tbody>
-
-<!-- ── I. METHODOLOGY ── -->
-<tr class="sec-head"><td colspan="4">I. &nbsp;Methodology</td></tr>
-
-<tr class="dr">
-  <td class="cr">Design paradigm</td>
-  <td class="ro">Analytical LUT<br><span class="note">Physics-based; pre-characterised</span></td>
-  <td class="gm">Analytical LUT<br><span class="note">Small-signal only</span></td>
-  <td class="co">Simulation-based<br>numerical optimizer<br><span class="note">Cadence ADE XL</span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Primary design parameter</td>
-  <td class="ro"><i>R</i><sub>on</sub>/<i>g</i><sub>m</sub><br><span class="note">Couples large-signal + small-signal</span></td>
-  <td class="gm"><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub><br><span class="note">Small-signal only</span></td>
-  <td class="co"><i>m</i><sub>a1</sub>, <i>m</i><sub>a2</sub>, <i>m</i><sub>a3</sub>, <i>I</i><sub>bias</sub>, <i>R</i>, <i>C</i><sub>az</sub><br><span class="note">6 numerical params; no physical link</span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Design entry stage</td>
-  <td class="ro">Pre-simulation</td>
-  <td class="gm">Pre-simulation<br><span class="note">Partial — no large-signal info</span></td>
-  <td class="co">Requires full transient<br>simulation per iteration</td>
-</tr>
-
-<!-- ── II. SETTLING PHASE COVERAGE ── -->
-<tr class="sec-head"><td colspan="4">II. &nbsp;Settling Phase Coverage</td></tr>
-
-<tr class="dr">
-  <td class="cr">Non-linear (large-signal / RC) settling characterized</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">Via <i>R</i><sub>on</sub> in LUT; &nbsp;<i>τ</i><sub>ls</sub> = <i>R</i><sub>on</sub><i>C</i><sub>L</sub></span></td>
-  <td class="gm"><span class="icon-sad"></span><br><span class="note"><i>R</i><sub>on</sub> absent from<br><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> framework</span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note">Acknowledged as<br>"not practical" [1]<sup>†</sup></span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Small-signal (<i>g</i><sub>m</sub><i>C</i>) settling characterized</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">Via <i>g</i><sub>m,bias</sub> in LUT;<br><i>BW</i> = <i>g</i><sub>m</sub>/(2π<i>C</i><sub>L</sub>)</span></td>
-  <td class="gm"><span class="icon-happy"></span><br><span class="note">Primary strength of<br><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> methodology</span></td>
-  <td class="co"><span class="icon-happy"></span><br><span class="note">Via rms error cost function</span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Unified two-phase settling model</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note"><i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> co-constrains<br>both <i>τ</i><sub>ls</sub> and <i>τ</i><sub>ss</sub></span></td>
-  <td class="gm"><span class="icon-sad"></span><br><span class="note">Single-phase exponential only</span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note">No time-budget allocation<br>between phases</span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Peak slew current <i>I</i><sub>peak</sub> predicted pre-simulation</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note"><i>I</i><sub>peak</sub> ∝ 1/(<i>R</i><sub>on</sub>/<i>g</i><sub>m</sub>);<br>log-log slope = −1</span></td>
-  <td class="gm"><span class="icon-sad"></span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note">Post-optimization<br>verification only</span></td>
-</tr>
-
-<!-- ── III. PROCESS CORNER ROBUSTNESS ── -->
-<tr class="sec-head"><td colspan="4">III. &nbsp;Process Corner Robustness</td></tr>
-
-<tr class="dr">
-  <td class="cr">TT / SS / FF corners visible at design entry</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">All 3 corners in LUT;<br>SS worst-case directly readable</span></td>
-  <td class="gm"><span class="icon-sad"></span><br><span class="note">LUT can be corner-swept<br>but <i>R</i><sub>on</sub> not extracted</span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note">PVT excluded from<br>optimizer loop<sup>‡</sup></span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Deadzone bias (<i>V</i><sub>DZN</sub>, <i>V</i><sub>DZP</sub>) determined pre-simulation</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">Per-corner, from<br><i>V</i><sub>bias</sub> vs <i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> plot<sup>§</sup></span></td>
-  <td class="gm"><span class="icon-sad"></span><br><span class="note">Unknown without iterative<br>transient corner sweeps</span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note"><i>V</i><sub>os</sub> is one of 6 optimized<br>params; corner sensitivity<br>unknown a priori</span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">SS-corner <i>R</i><sub>on</sub> degradation visible a priori</td>
-  <td class="ro"><span class="icon-happy"></span></td>
-  <td class="gm"><span class="icon-sad"></span></td>
-  <td class="co"><span class="icon-sad"></span></td>
-</tr>
-
-<!-- ── IV. DESIGN EQUATIONS AND INSIGHT ── -->
-<tr class="sec-head"><td colspan="4">IV. &nbsp;Design Equations and Physical Insight</td></tr>
-
-<tr class="dr">
-  <td class="cr">Closed-form design equations available</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note"><i>V</i><sub>bias</sub> = <i>V</i><sub>TH</sub> + 2<i>I</i><sub>D</sub>/<i>g</i><sub>m</sub>;<br><i>g</i><sub>m,bias</sub> ∝ (<i>R</i><sub>on</sub>/<i>g</i><sub>m</sub>)<sup>−1/3</sup>;<br><i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> ∝ <i>L</i><sup>2</sup>/(<i>WI</i><sub>D</sub>)</span></td>
-  <td class="gm"><span class="icon-happy"></span><br><span class="note">For small-signal:<br><i>G</i><sub>m</sub> = 2π<i>fC</i><sub>L</sub>;<br><i>W</i> = <i>I</i><sub>D</sub>/(<i>I</i><sub>D</sub>/<i>W</i>)|<sub>LUT</sub></span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note">Stability criterion exists but<br>"not realizable" as design<br>equation<sup>†</sup></span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Physical insight preserved throughout design</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">Every plot axis maps to<br>a physical quantity</span></td>
-  <td class="gm"><span class="icon-happy"></span><br><span class="note">For small-signal<br>operating point</span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note">Optimizer returns numbers;<br>no physical link retained</span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Subsumes <i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> methodology</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note"><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> readable from<br><i>g</i><sub>m</sub>/<i>I</i><sub>D</sub> vs <i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> plot;<br>reverse not possible</span></td>
-  <td class="gm">—</td>
-  <td class="co"><span class="icon-sad"></span></td>
-</tr>
-
-<!-- ── V. PRACTICAL DESIGN FLOW ── -->
-<tr class="sec-head"><td colspan="4">V. &nbsp;Practical Design Flow</td></tr>
-
-<tr class="dr">
-  <td class="cr">EDA tool requirement</td>
-  <td class="ro">Open-source only<br><span class="note">ngspice + Python (Colab)</span></td>
-  <td class="gm">Spectre (LUT gen.)<br><span class="note">Helper usable standalone</span></td>
-  <td class="co">Cadence Virtuoso<br>+ Spectre + ADE XL<br><span class="note">Full commercial license stack</span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Application-specific redesign required</td>
-  <td class="ro"><span class="icon-sad"></span><br><span class="note">LUT generated once<br>per technology node</span></td>
-  <td class="gm"><span class="icon-sad"></span><br><span class="note">LUT reusable across applications</span></td>
-  <td class="co"><span class="icon-happy"></span><br><span class="note">New testbench + cost function<br>per application</span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Cost function calibration required</td>
-  <td class="ro"><span class="icon-sad"></span></td>
-  <td class="gm"><span class="icon-sad"></span></td>
-  <td class="co"><span class="icon-happy"></span><br><span class="note">Manual ×4 adjustment<br>applied in paper<sup>¶</sup></span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">PVT robustness in design loop</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">SS/FF corner LUTs<br>included by design</span></td>
-  <td class="gm"><span class="icon-sad"></span><br><span class="note">Corner LUT possible;<br>dynamic behavior not covered</span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note">Excluded from optimizer;<br>post-hoc Monte Carlo only<sup>‡</sup></span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Technology portability</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">15 ngspice sims re-characterize<br>any PDK (~1 min)</span></td>
-  <td class="gm"><span class="icon-happy"></span><br><span class="note">New Spectre LUT per node</span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note">Full optimizer rerun needed;<br>180nm fails power target by 13×<sup>**</sup></span></td>
-</tr>
-
-<!-- ── VI. DESIGN EXAMPLE ── -->
-<tr class="sec-head"><td colspan="4">VI. &nbsp;Design Example Results (IBA, 20 MHz, 1 pF, IHP SG13G2 130nm)</td></tr>
-
-<tr class="dr">
-  <td class="cr"><i>G</i><sub>m</sub> target met (20 MHz BW)</td>
-  <td class="ro"><span class="icon-happy"></span> &nbsp;≈128 µS</td>
-  <td class="gm"><span class="icon-happy"></span> &nbsp;≈128 µS</td>
-  <td class="co"><span class="icon-happy"></span> &nbsp;15-bit ENOB</td>
-</tr>
-
-<tr class="dr">
-  <td class="cr"><i>R</i><sub>on</sub> known before transient simulation</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">8 kΩ unit; 2 kΩ after ×4 multiplier</span></td>
-  <td class="gm"><span class="icon-sad"></span><br><span class="note">Post-simulation discovery only</span></td>
-  <td class="co"><span class="icon-sad"></span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr"><i>V</i><sub>DZN</sub> (NMOS deadzone) pre-simulation</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">FF: 0.614 V | TT: 0.658 V | SS: 0.700 V</span></td>
-  <td class="gm"><span class="icon-sad"></span></td>
-  <td class="co"><span class="icon-sad"></span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr"><i>V</i><sub>DZP</sub> (PMOS deadzone) pre-simulation</td>
-  <td class="ro"><span class="icon-happy"></span><br><span class="note">FF: 1.070 V | TT: 1.010 V | SS: 0.959 V</span></td>
-  <td class="gm"><span class="icon-sad"></span></td>
-  <td class="co"><span class="icon-sad"></span></td>
-</tr>
-
-<tr class="dr">
-  <td class="cr">Extra transient sims needed to obtain <i>V</i><sub>DZ</sub> and <i>R</i><sub>on</sub></td>
-  <td class="ro"><span class="icon-happy"></span> &nbsp;<b>Zero</b></td>
-  <td class="gm"><span class="icon-sad"></span><br><span class="note">Multiple corner sweeps required</span></td>
-  <td class="co"><span class="icon-sad"></span><br><span class="note">Full optimizer run per corner</span></td>
-</tr>
-
-</tbody>
-</table>
-
-<div class="fn">
-  <p><sup>†</sup> J. Conrad <i>et al.</i>: <i>"Unfortunately, Section II-B is not really practical for designing a RAMP… This makes a design-by-equation cumbersome and not realizable."</i> [TCAS-I 2020, Sec. II-C]</p>
-  <p><sup>‡</sup> J. Conrad <i>et al.</i>: <i>"PVT variations are not encountered during the circuit optimization, because this would require many transient simulations to evaluate one iteration of the optimizer."</i> [TCAS-I 2020, Sec. V-E]</p>
-  <p><sup>§</sup> Deadzone bias values read from the <i>V</i><sub>bias</sub> vs. log(<i>R</i><sub>on</sub>/<i>g</i><sub>m</sub>) LUT plot at <i>R</i><sub>on</sub>/<i>g</i><sub>m</sub> = 125×10<sup>6</sup>, <i>I</i><sub>bias</sub> = 1 µA.</p>
-  <p><sup>¶</sup> J. Conrad <i>et al.</i>: <i>"the optimizer goal for the accuracy was readjusted ×4 smaller, i.e. 0.25 for the cost function."</i> [TCAS-I 2020, Sec. IV-B.3]</p>
-  <p><sup>**</sup> J. Conrad <i>et al.</i>, Table II: 180 nm power cost function = 12.99 (target: 1.0), failing the power constraint by 13×.</p>
-  <p style="margin-top:4px;">
-    <img class="icon" src="https://raw.githubusercontent.com/chennakeshavadasa/gmid_IHP130/refs/heads/main/Plots_Images/Notebook_Figs/happy.svg" alt="✓"> = fully supported / available pre-simulation &nbsp;&nbsp;
-    <img class="icon" src="https://raw.githubusercontent.com/chennakeshavadasa/gmid_IHP130/refs/heads/main/Plots_Images/Notebook_Figs/sad.svg" alt="✗"> = not available / requires post-simulation discovery
-  </p>
+<div id="main">
+  <div id="plots-col">
+    <div class="pw" id="pw0"><canvas id="cv0"></canvas></div>
+    <div class="pw" id="pw1"><canvas id="cv1"></canvas></div>
+    <div class="pw" id="pw2"><canvas id="cv2"></canvas></div>
+  </div>
+  <div id="circ-col"><canvas id="cv-circ"></canvas></div>
 </div>
 
+<div id="ctrl">
+  <button class="btn" id="btn-play">⏸ PAUSE</button>
+  <button class="btn" id="btn-reset">⟳ RESET</button>
+  <div class="ctrl-sep"></div>
+  <div class="ctrl-lbl">SPEED</div>
+  <button class="btn speed-btn" data-s="0.5">0.5×</button>
+  <button class="btn speed-btn active" data-s="1">1×</button>
+  <button class="btn speed-btn" data-s="2">2×</button>
+  <button class="btn speed-btn" data-s="5">5×</button>
+  <div class="ctrl-sep"></div>
+  <div id="tl-wrap">
+    <div id="tl-fill" style="width:0%"></div>
+    <div id="tl-knob" style="left:0%"></div>
+  </div>
+  <div id="time-disp">0.00 μs</div>
 </div>
 
 <script>
-  // Stamp all icon placeholders from templates
-  const HAPPY_SRC = "https://raw.githubusercontent.com/chennakeshavadasa/gmid_IHP130/refs/heads/main/Plots_Images/Notebook_Figs/happy.svg";
-  const SAD_SRC   = "https://raw.githubusercontent.com/chennakeshavadasa/gmid_IHP130/refs/heads/main/Plots_Images/Notebook_Figs/sad.svg";
-  document.querySelectorAll(".icon-happy").forEach(el => {
-    const img = document.createElement("img");
-    img.src = HAPPY_SRC; img.className = "icon"; img.alt = "✓";
-    el.replaceWith(img);
+'use strict';
+// ═══════════════════════════════════════════════════════
+//  IBA TRANSIENT RESPONSE VISUALIZER  v3
+//  RAMPA — Ron/Gm Design Methodology · CAC 2025
+// ═══════════════════════════════════════════════════════
+
+// ── State  (starts PLAYING automatically) ───────────────
+let t = 0, playing = true, speed = 1, lastTS = null;
+const TOTAL_S = 11, TNL = 0.35;
+
+// ── Canvas refs ──────────────────────────────────────────
+const cvA=document.getElementById('cv0'), cvB=document.getElementById('cv1'),
+      cvC=document.getElementById('cv2'), cvCi=document.getElementById('cv-circ');
+const ctxA=cvA.getContext('2d'), ctxB=cvB.getContext('2d'),
+      ctxC=cvC.getContext('2d'), ctxCi=cvCi.getContext('2d');
+
+let szA={w:100,h:100}, szB={w:100,h:100}, szC={w:100,h:100}, szCi={w:640,h:560};
+const DPR=Math.min(window.devicePixelRatio||1,2);
+
+function resizeCv(cv,el){
+  const w=el.clientWidth-2, h=el.clientHeight-2;
+  cv.width=w*DPR; cv.height=h*DPR;
+  cv.style.width=w+'px'; cv.style.height=h+'px';
+  cv.getContext('2d').setTransform(DPR,0,0,DPR,0,0);
+  return {w,h};
+}
+function resize(){
+  szA=resizeCv(cvA,document.getElementById('pw0'));
+  szB=resizeCv(cvB,document.getElementById('pw1'));
+  szC=resizeCv(cvC,document.getElementById('pw2'));
+  const ci=document.getElementById('circ-col');
+  szCi={w:ci.clientWidth,h:ci.clientHeight};
+  cvCi.width=szCi.w*DPR; cvCi.height=szCi.h*DPR;
+  cvCi.style.width=szCi.w+'px'; cvCi.style.height=szCi.h+'px';
+  ctxCi.setTransform(DPR,0,0,DPR,0,0);
+}
+
+// ── Utilities ────────────────────────────────────────────
+const lerp=(a,b,t)=>a+(b-a)*t;
+const clamp=(x,lo,hi)=>Math.max(lo,Math.min(hi,x));
+function smoothstep(a,b,x){const u=clamp((x-a)/(b-a),0,1);return u*u*(3-2*u);}
+function lerpCol(r1,g1,b1,r2,g2,b2,f){
+  return `rgb(${Math.round(lerp(r1,r2,f))},${Math.round(lerp(g1,g2,f))},${Math.round(lerp(b1,b2,f))})`;
+}
+
+// ── Signal functions ──────────────────────────────────────
+const VX_NL_END  = 0.28 + 0.72*(1-Math.exp(-4.5));   // ≈0.992 (NL endpoint, now high)
+const IOU_NL_END = Math.exp(-2.8)+0.015;           // ≈0.076
+const VOU_NL_END = 0.8100; // = vout(TNL) from two-exponential model
+
+// ── Sigmoid stitch helper (Matlab-style beta blend) ───────
+// Higher beta → sharper but smooth transition at t=TNL.
+// sig(0)=0.5, approaches 0/1 for large |x|.
+function sig(z){ return 1/(1+Math.exp(-z)); }
+
+function vx(t){
+  const tnc=clamp(t/TNL,0,1), tlc=clamp((t-TNL)/(1-TNL),0,1);
+  // NL: fast rise from ~0.28 (large-signal) toward ~0.99 (SS plateau entry)
+  const nlF=0.28+0.72*(1-Math.exp(-4.5*tnc));
+  // LS: slow final approach to 1.0 plateau — slope-matched via sig stitch
+  const lsF=VX_NL_END+(1.0-VX_NL_END)*(1-Math.exp(-5*tlc));
+  const s=sig(30*(t-TNL));
+  return (1-s)*nlF + s*lsF;
+}
+
+function iout(t){
+  const tnc=clamp(t/TNL,0,1), tlc=clamp((t-TNL)/(1-TNL),0,1);
+  const nlF=Math.exp(-2.8*tnc)+0.015;
+  // L phase: continuous from IOU_NL_END, reduced ripple amplitude so Vout stays clean
+  const lsF=IOU_NL_END*Math.exp(-10*tlc)          // fast decay of NL residual → continuity
+           + 0.038*Math.exp(-5*tlc)*Math.sin(8*Math.PI*tlc); // gentle small-signal oscillation
+  const s=sig(28*(t-TNL));   // beta=28
+  return (1-s)*nlF + s*lsF;
+}
+
+// ── Vout: single two-exponential formula — C-infinity, no blending, no kink ──
+// Vout = A*(1-exp(-k1*t)) + B*(1-exp(-k2*t))
+// k1=10 (fast NL component), k2=1.2 (slow L settling component)
+// A,B solved analytically: hits V_OUT_LS=0.81 at t=TNL and V_FINAL=0.90 at t=1
+// Slope decreases smoothly: 0.38→0.17→0.10 across L phase → visibly settles
+const VOUT_A = 0.76882, VOUT_B = 0.18777;
+const VOUT_K1 = 10, VOUT_K2 = 1.2;
+
+function vout(t){
+  return VOUT_A*(1-Math.exp(-VOUT_K1*t)) + VOUT_B*(1-Math.exp(-VOUT_K2*t));
+}
+
+// ── Plot drawing ─────────────────────────────────────────
+const PAD={l:52,r:14,t:32,b:28};
+
+function drawPlot(ctx,sz,cfg){
+  const W=sz.w,H=sz.h,gW=W-PAD.l-PAD.r,gH=H-PAD.t-PAD.b;
+  const x0=PAD.l,y0=PAD.t;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  ctx.fillStyle='#030710'; ctx.fillRect(0,0,W,H);
+
+  const divX=x0+gW*TNL;
+
+  // Phase tint
+  ctx.fillStyle='rgba(255,51,34,.05)';  ctx.fillRect(x0,y0,divX-x0,gH);
+  ctx.fillStyle='rgba(34,170,255,.04)'; ctx.fillRect(divX,y0,gW-(divX-x0),gH);
+
+  // Grid
+  ctx.strokeStyle='#0d1f3a'; ctx.lineWidth=0.5;
+  for(let i=0;i<=4;i++){const y=y0+gH*i/4;ctx.beginPath();ctx.moveTo(x0,y);ctx.lineTo(x0+gW,y);ctx.stroke();}
+  for(let i=0;i<=5;i++){const x=x0+gW*i/5;ctx.beginPath();ctx.moveTo(x,y0);ctx.lineTo(x,y0+gH);ctx.stroke();}
+
+  // Phase divider
+  ctx.strokeStyle='#3060a0'; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+  ctx.beginPath();ctx.moveTo(divX,y0);ctx.lineTo(divX,y0+gH);ctx.stroke();
+  ctx.setLineDash([]);
+
+  // Phase region labels — BRIGHT, readable
+  ctx.font='bold 11px Share Tech Mono,monospace'; ctx.textAlign='center';
+  ctx.fillStyle='#ff7766'; ctx.fillText('NL',x0+(divX-x0)*0.5,y0+14);
+  ctx.fillStyle='#55ccff'; ctx.fillText('L', divX+gW*(1-TNL)*0.12,y0+14);
+
+  // Reference lines + labels
+  (cfg.refs||[]).forEach(r=>{
+    if(r.v<cfg.yMin||r.v>cfg.yMax)return;
+    const ry=y0+gH*(1-(r.v-cfg.yMin)/(cfg.yMax-cfg.yMin));
+    ctx.strokeStyle=r.color; ctx.lineWidth=0.8; ctx.setLineDash([2,4]);
+    ctx.beginPath();ctx.moveTo(x0,ry);ctx.lineTo(x0+gW,ry);ctx.stroke();ctx.setLineDash([]);
+    if(r.label){
+      ctx.fillStyle=r.color;
+      ctx.font='bold 10px Share Tech Mono,monospace';
+      ctx.textAlign='left';
+      ctx.fillText(r.label,x0+4,ry-4);
+    }
   });
-  document.querySelectorAll(".icon-sad").forEach(el => {
-    const img = document.createElement("img");
-    img.src = SAD_SRC; img.className = "icon"; img.alt = "✗";
-    el.replaceWith(img);
+
+  // ── Waveform: ONE continuous path, canvas gradient red→blue ──────────
+  // Single stroke = zero discontinuity possible. The gradient spans the full
+  // plot x-range so colour transitions at TNL regardless of current t.
+  const toX=ti=>x0+gW*ti;
+  const toY=v=>{ const y=y0+gH*(1-(v-cfg.yMin)/(cfg.yMax-cfg.yMin)); return Math.max(y0,Math.min(y0+gH,y)); };
+  const fn=cfg.fn;
+  const BW=0.14; // wide colour gradient fade — independent of formula blend
+
+  if(t>0){
+    // Gradient defined over the full plot width (x0 → x0+gW = t=0 → t=1)
+    const grad=ctx.createLinearGradient(x0,0,x0+gW,0);
+    grad.addColorStop(0,                       '#ff5544');
+    grad.addColorStop(clamp(TNL-BW,0,0.9999),  '#ff5544');  // pure red up to blend start
+    grad.addColorStop(clamp(TNL+BW,0.0001,1),  '#44bbff');  // pure blue after blend end
+    grad.addColorStop(1,                       '#44bbff');
+
+    // Build ONE path from 0 → current t
+    const steps=Math.max(10, Math.round(t*350));
+
+    // Glow pass (blurred wide stroke using same gradient)
+    ctx.save();
+    ctx.globalAlpha=0.28;
+    ctx.strokeStyle=grad; ctx.lineWidth=8; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath();
+    for(let i=0;i<=steps;i++){const ti=(t/steps)*i; i===0?ctx.moveTo(toX(ti),toY(fn(ti))):ctx.lineTo(toX(ti),toY(fn(ti)));}
+    ctx.stroke();
+    ctx.restore();
+
+    // Sharp line pass — same single path, no shadow, no opacity
+    ctx.strokeStyle=grad; ctx.lineWidth=2.4; ctx.lineCap='round'; ctx.lineJoin='round';
+    ctx.beginPath();
+    for(let i=0;i<=steps;i++){const ti=(t/steps)*i; i===0?ctx.moveTo(toX(ti),toY(fn(ti))):ctx.lineTo(toX(ti),toY(fn(ti)));}
+    ctx.stroke();
+  }
+
+  // Glowing current-value dot (colour tracks gradient at current t)
+  if(t>0){
+    const blend=smoothstep(TNL-BW,TNL+BW,t);
+    const dr=Math.round(lerp(255,68,blend)), dg=Math.round(lerp(85,187,blend)), db=Math.round(lerp(68,255,blend));
+    const dC=`rgb(${dr},${dg},${db})`;
+    ctx.shadowColor=dC; ctx.shadowBlur=22;
+    ctx.fillStyle=dC;
+    ctx.beginPath();ctx.arc(toX(t),toY(fn(t)),5.5,0,Math.PI*2);ctx.fill();
+    ctx.shadowBlur=0;
+  }
+
+  // Playhead cursor
+  if(t>0&&t<1){
+    ctx.strokeStyle='rgba(255,255,255,0.15)'; ctx.lineWidth=1; ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.moveTo(toX(t),y0);ctx.lineTo(toX(t),y0+gH);ctx.stroke();ctx.setLineDash([]);
+  }
+
+  // Axes
+  ctx.strokeStyle='#2a4a80'; ctx.lineWidth=1.2;
+  ctx.beginPath();ctx.moveTo(x0,y0);ctx.lineTo(x0,y0+gH);ctx.lineTo(x0+gW,y0+gH);ctx.stroke();
+
+  // Y-axis tick values — BRIGHT
+  ctx.fillStyle='#88b8d8'; ctx.font='bold 9px Share Tech Mono,monospace'; ctx.textAlign='right';
+  for(let i=0;i<=4;i++){
+    const v=cfg.yMin+(cfg.yMax-cfg.yMin)*(4-i)/4, y=y0+gH*i/4;
+    ctx.fillText(v.toFixed(cfg.yDec||1),x0-5,y+3);
+    ctx.strokeStyle='#1a3a60'; ctx.lineWidth=0.5;
+    ctx.beginPath();ctx.moveTo(x0-3,y);ctx.lineTo(x0,y);ctx.stroke();
+  }
+
+  // X-axis label — BRIGHT
+  ctx.fillStyle='#88b8d8'; ctx.font='bold 10px Share Tech Mono,monospace'; ctx.textAlign='right';
+  ctx.fillText('time (μs)',x0+gW+PAD.r-2,y0+gH+18);
+
+  // Plot title — LARGE, BRIGHT
+  ctx.fillStyle='#d8f0ff'; ctx.font='bold 13px Rajdhani,sans-serif'; ctx.textAlign='left';
+  ctx.fillText(cfg.label,4,18);
+
+  // Subtitle — readable
+  ctx.fillStyle='#80aac8'; ctx.font='10px Share Tech Mono,monospace';
+  ctx.fillText(cfg.sub,4,H-6);
+}
+
+function drawAllPlots(){
+  drawPlot(ctxA,szA,{
+    fn:vx, yMin:0, yMax:1.1, yDec:1,
+    label:'(a)  V_X  —  Virtual Ground Voltage',
+    sub:'large-signal rise  →  small-signal plateau  (V_X_SS)',
+    refs:[{v:0.28,color:'#ff5544cc',label:'V_X_LS'},{v:1.0,color:'#44bbffcc',label:'V_X_SS'}]
   });
+  drawPlot(ctxB,szB,{
+    fn:iout, yMin:-0.20, yMax:1.1, yDec:1,
+    label:'(b)  I_OUT  —  Output Current',
+    sub:'large NL charging current  →  small-signal (MP vs MN)',
+    refs:[{v:0,color:'#3a6090cc',label:'0'}]
+  });
+  drawPlot(ctxC,szC,{
+    fn:vout, yMin:0, yMax:1.1, yDec:1,
+    label:'(c)  V_OUT  —  Output Voltage',
+    sub:'V_OUT_LS  →  V_OUT_FINAL',
+    refs:[{v:VOU_NL_END,color:'#ff7766cc',label:'V_OUT_LS'},{v:0.90,color:'#44bbffcc',label:'V_OUT_FINAL'}]
+  });
+}
+
+// ══════════════════════════════════════════════════════════
+//  CIRCUIT  (logical 640 × 595)
+// ══════════════════════════════════════════════════════════
+const CI={
+  U:22,
+  P_gx:155,P_gy:168, N_gx:155,N_gy:432,
+  TX:247,
+  VDD_y:28,
+  P_src:168-66, P_drn:168+66,
+  N_drn:432-66, N_src:432+66,
+  OUT_y:300,
+  CL_x:418,CL_t:312,CL_b:348,CL_gnd:490,
+  NGND_y:538,
+  VX_jx:85,VX_jy:300,
+  VS1_cx:85,VS1_cy:222,VS1_r:18,
+  VS2_cx:85,VS2_cy:392,VS2_r:18,
+  PR_x:472,PR_y:45,PR_W:158,PR_H:102,PR_GAP:10,
+};
+CI.VDD_x=CI.TX;
+
+function ln(c,x1,y1,x2,y2){c.beginPath();c.moveTo(x1,y1);c.lineTo(x2,y2);c.stroke();}
+
+function gndSym(c,x,y,col){
+  // Three descending bars — classic ground symbol, clean and bright
+  const bars=[{w:24,lw:2.2},{w:15,lw:1.8},{w:7,lw:1.4}];
+  bars.forEach((b,i)=>{
+    c.strokeStyle=col; c.lineWidth=b.lw;
+    c.beginPath(); c.moveTo(x-b.w/2,y+i*6); c.lineTo(x+b.w/2,y+i*6); c.stroke();
+  });
+}
+
+function drawVS(c,cx,cy,r,col){
+  c.strokeStyle=col; c.lineWidth=2;
+  c.shadowColor=col; c.shadowBlur=8;
+  c.beginPath(); c.arc(cx,cy,r,0,Math.PI*2); c.stroke();
+  c.shadowBlur=0;
+  c.fillStyle='#d0eeff'; c.font='bold 14px Share Tech Mono,monospace'; c.textAlign='center';
+  c.fillText('+',cx,cy-r*0.22); c.fillText('−',cx,cy+r*0.72);
+}
+
+function drawMOS(ctx,type,gx,gy,col,glow,alpha){
+  const U=CI.U,gpX=gx+50,chX=gpX+7,tX=chX+35;
+  const BR=5.5; // PMOS inversion bubble radius
+  ctx.save();
+  ctx.globalAlpha=alpha??1;
+  if(glow>0){ctx.shadowColor=col;ctx.shadowBlur=glow;}
+  ctx.strokeStyle=col; ctx.fillStyle=col; ctx.lineCap='round'; ctx.lineJoin='round';
+
+  // Gate lead (PMOS gets inversion bubble)
+  if(type==='P'){
+    ctx.lineWidth=2; ln(ctx,gx,gy,gpX-2*BR-1,gy);
+    ctx.lineWidth=1.8;
+    ctx.beginPath(); ctx.arc(gpX-BR,gy,BR,0,Math.PI*2); ctx.stroke();
+  } else {
+    ctx.lineWidth=2; ln(ctx,gx,gy,gpX,gy);
+  }
+
+  // Gate plate (oxide) — trimmed to match channel bars
+  ctx.lineWidth=2.8; ln(ctx,gpX,gy-1.1*U,gpX,gy+1.1*U);
+
+  // Two channel bars — trimmed outer extent
+  ctx.lineWidth=2.5;
+  ln(ctx,chX,gy-1.1*U, chX,gy-U*0.45);   // drain-side bar  (was 1.5U)
+  ln(ctx,chX,gy+U*0.45,chX,gy+1.1*U);    // source-side bar (was 1.5U)
+
+  // Drain and source horizontal connectors to terminal column
+  ctx.lineWidth=2;
+  ln(ctx,chX,gy-U,tX,gy-U);
+  ln(ctx,chX,gy+U,tX,gy+U);
+
+  // Terminal extension wires
+  ln(ctx,tX,gy-U,tX,gy-1.8*U);   // drain up   (was 2.2U)
+  ln(ctx,tX,gy+U,tX,gy+1.8*U);   // source down (was 2.2U)
+  ctx.restore();
+}
+
+// ── Probe panel — all text BRIGHT ────────────────────────
+function drawProbe(ctx,x,y,W,H,name,node,val,barFrac,bipolar,col){
+  ctx.fillStyle='rgba(3,8,22,0.93)';
+  ctx.strokeStyle=col+'88'; ctx.lineWidth=1;
+  ctx.fillRect(x,y,W,H); ctx.strokeRect(x,y,W,H);
+
+  // top accent
+  ctx.fillStyle=col; ctx.fillRect(x,y,W,3);
+
+  // signal name — LARGE BRIGHT
+  ctx.fillStyle=col;
+  ctx.font='bold 13px Share Tech Mono,monospace'; ctx.textAlign='left';
+  ctx.shadowColor=col; ctx.shadowBlur=8;
+  ctx.fillText(name,x+7,y+20);
+  ctx.shadowBlur=0;
+
+  // node label — bright subtitle
+  ctx.fillStyle='#a0c8e8';
+  ctx.font='bold 9px Share Tech Mono,monospace'; ctx.textAlign='right';
+  ctx.fillText(node,x+W-5,y+20);
+
+  // Bar gauge
+  const bx=x+7,by=y+26,bW=W-14,bH=12;
+  ctx.fillStyle='#060e22'; ctx.fillRect(bx,by,bW,bH);
+  ctx.shadowColor=col; ctx.shadowBlur=6;
+  if(bipolar){
+    const mid=bx+bW/2, fill=Math.abs(clamp(barFrac,-1,1))*bW/2;
+    ctx.fillStyle= barFrac>=0 ? col+'aa' : '#ffaa22aa';
+    barFrac>=0?ctx.fillRect(mid,by,fill,bH):ctx.fillRect(mid-fill,by,fill,bH);
+    ctx.shadowBlur=0;
+    ctx.strokeStyle=col+'66'; ctx.lineWidth=0.6;
+    ctx.beginPath(); ctx.moveTo(mid,by); ctx.lineTo(mid,by+bH); ctx.stroke();
+  } else {
+    ctx.fillStyle=col+'aa';
+    ctx.fillRect(bx,by,clamp(barFrac,0,1)*bW,bH);
+  }
+  ctx.shadowBlur=0;
+  ctx.strokeStyle=col+'40'; ctx.lineWidth=0.5; ctx.strokeRect(bx,by,bW,bH);
+
+  // Value — WHITE, LARGE
+  ctx.shadowColor=col; ctx.shadowBlur=12;
+  ctx.fillStyle='#ffffff';
+  ctx.font='bold 22px Share Tech Mono,monospace'; ctx.textAlign='center';
+  ctx.fillText(val,x+W/2,y+70);
+  ctx.shadowBlur=0;
+
+  // unit/description
+  ctx.fillStyle='#80aac8';
+  ctx.font='bold 9px Share Tech Mono,monospace';
+  ctx.fillText('(normalised)',x+W/2,y+H-5);
+}
+
+// ── Main circuit draw ─────────────────────────────────────
+let dashPh=0;
+
+function drawCircuit(ts){
+  const W=szCi.w,H=szCi.h;
+  ctxCi.setTransform(DPR,0,0,DPR,0,0);
+  ctxCi.clearRect(0,0,W,H);
+  ctxCi.fillStyle='#040810'; ctxCi.fillRect(0,0,W,H);
+
+  const scl=Math.min(W/640,H/595)*0.93;
+  const ox=(W-640*scl)/2, oy=(H-595*scl)/2;
+  ctxCi.save(); ctxCi.translate(ox,oy); ctxCi.scale(scl,scl);
+
+  const C=CI, wc='#2a5a98';
+
+  // Smooth transition factor: 0=NL, 1=LS
+  const transF=smoothstep(TNL-0.06,TNL+0.06,t);
+
+  // Colours that smoothly transition
+  const pmosCol =lerpCol(255,60,40, 55,255,160,transF);
+  const pmosGlow=lerp(22,11,transF)*(transF<0.5?0.8+0.2*Math.sin(ts*0.004):1);
+  const nmosCol =lerpCol(45,75,95,  55,255,160,transF);
+  const nmosAlpha=lerp(0.28,1.0,transF);
+  const nmosGlow=lerp(0,10,transF);
+  const capCol  =lerpCol(255,60,40, 34,170,255,transF);
+
+  // ── Wires ─────────────────────────────────────────────
+  // EXT must match the terminal extension length in drawMOS (1.8*U)
+  const EXT=1.8;
+  const pSrcY = C.P_gy - EXT*C.U;   // PMOS source terminal top
+  const pDrnY = C.P_gy + EXT*C.U;   // PMOS drain terminal bottom
+  const nDrnY = C.N_gy - EXT*C.U;   // NMOS drain terminal top
+  const nSrcY = C.N_gy + EXT*C.U;   // NMOS source terminal bottom
+
+  ctxCi.strokeStyle=wc; ctxCi.lineWidth=2; ctxCi.lineCap='round';
+  ln(ctxCi,C.TX,C.VDD_y+18,C.TX,pSrcY);   // VDD → PMOS source  (no gap)
+  ln(ctxCi,C.TX,pDrnY,C.TX,nDrnY);         // PMOS drain → NMOS drain  (no gap)
+  ln(ctxCi,C.TX,nSrcY,C.TX,C.NGND_y);     // NMOS source → GND  (no -14 offset)
+  ln(ctxCi,C.TX,C.OUT_y,C.CL_x,C.OUT_y);  // tap → CL horizontal
+  ln(ctxCi,C.CL_x,C.OUT_y,C.CL_x,C.CL_t); // CL top wire
+  ln(ctxCi,C.CL_x,C.CL_b,C.CL_x,C.CL_gnd); // CL bottom → GND  (no -14 offset)
+  ln(ctxCi,C.VX_jx-32,C.VX_jy,C.VX_jx,C.VX_jy);
+  ln(ctxCi,C.VX_jx,C.VX_jy,C.VS1_cx,C.VS1_cy+C.VS1_r+3);
+  ln(ctxCi,C.VS1_cx,C.VS1_cy-C.VS1_r-3,C.VS1_cx,C.P_gy);
+  ln(ctxCi,C.VS1_cx,C.P_gy,C.P_gx,C.P_gy);
+  ln(ctxCi,C.VX_jx,C.VX_jy,C.VS2_cx,C.VS2_cy-C.VS2_r-3);
+  ln(ctxCi,C.VS2_cx,C.VS2_cy+C.VS2_r+3,C.VS2_cx,C.N_gy);
+  ln(ctxCi,C.VS2_cx,C.N_gy,C.N_gx,C.N_gy);
+
+  // Junction dots
+  ctxCi.fillStyle=wc;
+  [{x:C.TX,y:C.OUT_y},{x:C.VX_jx,y:C.VX_jy}].forEach(p=>{
+    ctxCi.beginPath(); ctxCi.arc(p.x,p.y,4,0,Math.PI*2); ctxCi.fill();
+  });
+
+  // ── VDD label  ────────────────────────────────────────
+  ctxCi.save();
+  ctxCi.strokeStyle='#ffdd55'; ctxCi.lineWidth=2.2;
+  ln(ctxCi,C.VDD_x-24,C.VDD_y+15,C.VDD_x+24,C.VDD_y+15);
+  ctxCi.fillStyle='#ffdd55';
+  ctxCi.shadowColor='#ffdd55'; ctxCi.shadowBlur=8;
+  ctxCi.font='bold 15px Rajdhani,sans-serif'; ctxCi.textAlign='center';
+  ctxCi.fillText('VDD',C.VDD_x,C.VDD_y+12);
+  ctxCi.shadowBlur=0;
+  ctxCi.restore();
+
+  // ── GND symbols ──────────────────────────────────────
+  gndSym(ctxCi,C.TX,C.NGND_y,'#7aaabb');
+  gndSym(ctxCi,C.CL_x,C.CL_gnd,'#7aaabb');
+  ctxCi.fillStyle='#99ccdd'; ctxCi.font='bold 12px Share Tech Mono,monospace'; ctxCi.textAlign='center';
+  ctxCi.shadowColor='#44aacc'; ctxCi.shadowBlur=4;
+  ctxCi.fillText('GND',C.TX,C.NGND_y+26);
+  ctxCi.fillText('GND',C.CL_x,C.CL_gnd+26);
+  ctxCi.shadowBlur=0;
+
+  // ── Voltage sources ──────────────────────────────────
+  drawVS(ctxCi,C.VS1_cx,C.VS1_cy,C.VS1_r,'#88bbdd');
+  drawVS(ctxCi,C.VS2_cx,C.VS2_cy,C.VS2_r,'#88bbdd');
+  // VS labels beside each circle — VDZP (PMOS gate) and VDZN (NMOS gate)
+  ctxCi.fillStyle='#aad8f0'; ctxCi.font='bold 12px Share Tech Mono,monospace';
+  ctxCi.shadowColor='#44aadd'; ctxCi.shadowBlur=5; ctxCi.textAlign='right';
+  ctxCi.fillText('VDZP',C.VS1_cx-C.VS1_r-5,C.VS1_cy+4);
+  ctxCi.fillText('VDZN',C.VS2_cx-C.VS2_r-5,C.VS2_cy+4);
+  ctxCi.shadowBlur=0;
+
+  // ── VX node label — BRIGHT ───────────────────────────
+  ctxCi.fillStyle='#bbddff';
+  ctxCi.shadowColor='#44bbff'; ctxCi.shadowBlur=8;
+  ctxCi.font='bold 15px Share Tech Mono,monospace'; ctxCi.textAlign='right';
+  ctxCi.fillText('VX',C.VX_jx-36,C.VX_jy+5);
+  ctxCi.shadowBlur=0;
+
+  // ── PMOS ─────────────────────────────────────────────
+  drawMOS(ctxCi,'P',C.P_gx,C.P_gy,pmosCol,pmosGlow,1.0);
+
+  // Triode channel glow fades
+  if(transF<1){
+    const gpX=C.P_gx+50,chX=gpX+7,U=C.U;
+    ctxCi.save(); ctxCi.globalAlpha=(1-transF)*0.28*(0.7+0.3*Math.sin(ts*0.005));
+    ctxCi.shadowColor='#ff3322'; ctxCi.shadowBlur=16;
+    ctxCi.fillStyle='#ff44220d';
+    ctxCi.fillRect(gpX+2,C.P_gy-2*U+2,chX-gpX+2,4*U-4);
+    ctxCi.restore();
+  }
+
+  // PMOS labels — LARGE BRIGHT
+  ctxCi.save(); ctxCi.fillStyle=pmosCol;
+  ctxCi.shadowColor=pmosCol; ctxCi.shadowBlur=8;
+  ctxCi.font='bold 14px Share Tech Mono,monospace'; ctxCi.textAlign='left';
+  ctxCi.fillText('MP',C.TX+6,C.P_gy-C.U+4);
+  ctxCi.shadowBlur=0;
+  ctxCi.font='bold 12px Rajdhani,sans-serif';
+  ctxCi.fillText(transF<0.5?'TRIODE':'SATURATION',C.TX+6,C.P_gy-C.U+19);
+  ctxCi.restore();
+
+  // ── NMOS ─────────────────────────────────────────────
+  drawMOS(ctxCi,'N',C.N_gx,C.N_gy,nmosCol,nmosGlow,nmosAlpha);
+
+  ctxCi.save(); ctxCi.fillStyle=nmosCol; ctxCi.globalAlpha=nmosAlpha;
+  ctxCi.shadowColor=nmosCol; ctxCi.shadowBlur=8;
+  ctxCi.font='bold 14px Share Tech Mono,monospace'; ctxCi.textAlign='left';
+  ctxCi.fillText('MN',C.TX+6,C.N_gy-C.U+4);
+  ctxCi.shadowBlur=0;
+  ctxCi.font='bold 12px Rajdhani,sans-serif';
+  ctxCi.fillText(transF<0.5?'OFF':'SATURATION',C.TX+6,C.N_gy-C.U+19);
+  ctxCi.restore();
+
+  // ── CL capacitor ─────────────────────────────────────
+  const voutNow=vout(t),vFrac=clamp(voutNow/0.90,0,1);
+  const plW=28;
+  ctxCi.strokeStyle='#4a7aaa'; ctxCi.lineWidth=2.8;
+  ln(ctxCi,C.CL_x-plW,C.CL_t,C.CL_x+plW,C.CL_t);
+  ln(ctxCi,C.CL_x-plW,C.CL_b,C.CL_x+plW,C.CL_b);
+  if(vFrac>0.01){
+    const maxH=C.CL_b-C.CL_t-4;
+    const fH=maxH*vFrac;
+    // Fill rises from bottom plate upward
+    ctxCi.save(); ctxCi.shadowColor=capCol; ctxCi.shadowBlur=10;
+    ctxCi.fillStyle=capCol+'30'; ctxCi.fillRect(C.CL_x-plW+2,C.CL_b-2-fH,(plW-2)*2,fH);
+    ctxCi.restore();
+  }
+  // CL label BRIGHT + big
+  ctxCi.fillStyle='#99ddee'; ctxCi.font='bold 15px Share Tech Mono,monospace';
+  ctxCi.shadowColor='#44bbcc'; ctxCi.shadowBlur=6;
+  ctxCi.textAlign='center'; ctxCi.fillText('CL',C.CL_x,C.CL_b+20);
+  ctxCi.shadowBlur=0;
+
+  // ── VOUT label at output node (on horizontal wire, above the tap) ──
+  const voutLabelCol = lerpCol(255,80,60, 60,190,255, transF);
+  ctxCi.save();
+  ctxCi.fillStyle = voutLabelCol;
+  ctxCi.shadowColor = voutLabelCol; ctxCi.shadowBlur = 8;
+  ctxCi.font = 'bold 14px Share Tech Mono,monospace';
+  ctxCi.textAlign = 'left';
+  ctxCi.fillText('VOUT', C.TX + 10, C.OUT_y - 8);
+  ctxCi.shadowBlur = 0;
+  ctxCi.restore();
+  dashPh=(ts*0.06)%14;
+  const INow=iout(t),IMag=Math.abs(INow),Isign=Math.sign(INow)||1;
+
+  // NL current (fades out smoothly)
+  const nlAlpha=lerp(0.9,0,transF)*Math.max(0.1,IMag);
+  if(nlAlpha>0.03){
+    const thick=lerp(8,0,transF);
+    ctxCi.save(); ctxCi.globalAlpha=nlAlpha;
+    ctxCi.strokeStyle='#ff4433'; ctxCi.lineWidth=thick; ctxCi.lineCap='round';
+    ctxCi.shadowColor='#ff3322'; ctxCi.shadowBlur=thick*2.5;
+    ctxCi.setLineDash([8,5]); ctxCi.lineDashOffset=-dashPh;
+    ctxCi.beginPath(); ctxCi.moveTo(C.TX,C.VDD_y+18); ctxCi.lineTo(C.TX,pSrcY); ctxCi.stroke();
+    ctxCi.beginPath();
+    ctxCi.moveTo(C.TX,pDrnY); ctxCi.lineTo(C.TX,C.OUT_y);
+    ctxCi.lineTo(C.CL_x,C.OUT_y); ctxCi.lineTo(C.CL_x,C.CL_t); ctxCi.stroke();
+    ctxCi.setLineDash([]); ctxCi.shadowBlur=0; ctxCi.restore();
+  }
+
+  // LS small-signal current (fades in smoothly)
+  const lsAlpha=lerp(0,Math.min(1,IMag*12),transF);
+  if(lsAlpha>0.02&&IMag>0.002){
+    const lsC=Isign>0?'#33ff99':'#ffaa22';
+    const thick=lerp(0,1.5+IMag*14,transF);
+    ctxCi.save(); ctxCi.globalAlpha=clamp(lsAlpha,0,1);
+    ctxCi.strokeStyle=lsC; ctxCi.lineWidth=thick; ctxCi.lineCap='round';
+    ctxCi.shadowColor=lsC; ctxCi.shadowBlur=10;
+    ctxCi.setLineDash([5,7]); ctxCi.lineDashOffset=Isign>0?-dashPh:dashPh;
+    ctxCi.beginPath(); ctxCi.moveTo(C.TX,pDrnY); ctxCi.lineTo(C.TX,C.OUT_y); ctxCi.stroke();
+    ctxCi.strokeStyle=Isign<0?'#33ff99':'#ffaa22';
+    ctxCi.lineDashOffset=Isign<0?-dashPh:dashPh;
+    ctxCi.beginPath(); ctxCi.moveTo(C.TX,C.OUT_y); ctxCi.lineTo(C.TX,nDrnY); ctxCi.stroke();
+    ctxCi.setLineDash([]); ctxCi.shadowBlur=0; ctxCi.restore();
+  }
+
+  // ── Regime info box — ALL TEXT BRIGHT ─────────────────
+  const bx=302,by=56,bW=160,bH=86;
+  const infoCol=lerpCol(255,100,60, 60,200,255,transF);
+  const infoBg =transF<0.5?'rgba(255,51,34,0.1)':'rgba(34,170,255,0.09)';
+  ctxCi.fillStyle=infoBg; ctxCi.strokeStyle=infoCol+'66'; ctxCi.lineWidth=1;
+  ctxCi.fillRect(bx,by,bW,bH); ctxCi.strokeRect(bx,by,bW,bH);
+
+  ctxCi.fillStyle=infoCol;
+  ctxCi.shadowColor=infoCol; ctxCi.shadowBlur=6;
+  ctxCi.font='bold 12px Share Tech Mono,monospace'; ctxCi.textAlign='left';
+  ctxCi.fillText(transF<0.5?'NON-LINEAR SETTLING':'LINEAR SETTLING',bx+8,by+18);
+  ctxCi.shadowBlur=0;
+
+  ctxCi.font='bold 11px Rajdhani,sans-serif'; ctxCi.fillStyle='#e0f0ff';
+  if(transF<0.5){
+    ctxCi.fillText('MP : TRIODE  — large I_DS',bx+8,by+35);
+    ctxCi.fillText('MN : OFF     — V_GS ≈ 0',  bx+8,by+50);
+    ctxCi.fillText('I_OUT = '+INow.toFixed(3)+'  → fast V_OUT rise',bx+8,by+65);
+  } else {
+    ctxCi.fillText('MP : SAT — gm · V_in  (push)',bx+8,by+35);
+    ctxCi.fillText('MN : SAT — gm · V_in  (pull)',bx+8,by+50);
+    ctxCi.fillText('I_OUT = '+INow.toFixed(3)+'  (oscillating)',bx+8,by+65);
+  }
+
+  // ── SIGNAL PROBE PANELS — BRIGHT ─────────────────────
+  const PX=C.PR_x,PY=C.PR_y,PW=C.PR_W,PH=C.PR_H,PG=C.PR_GAP;
+
+  // Section header BRIGHT
+  ctxCi.fillStyle='#80b8d8'; ctxCi.font='bold 11px Share Tech Mono,monospace';
+  ctxCi.textAlign='center'; ctxCi.fillText('⬡  LIVE SIGNAL PROBES',PX+PW/2,PY-8);
+
+  // VX probe
+  const vxNow=vx(t);
+  const vxC=lerpCol(255,80,60,60,190,255,transF);
+  drawProbe(ctxCi,PX,PY,          PW,PH,'VX',  '@ V_X node',  vxNow.toFixed(3),vxNow/1.0,    false,vxC);
+
+  // IOUT probe
+  const iNow=iout(t),iNorm=iNow/1.015;
+  const iC=iNow>=0?lerpCol(255,80,60,55,255,160,transF):'#ffaa22';
+  drawProbe(ctxCi,PX,PY+PH+PG,   PW,PH,'IOUT','@ OUT wire',  iNow.toFixed(3), iNorm,         true, iC);
+
+  // VOUT probe
+  const vNow=vout(t);
+  const vC=lerpCol(255,80,60,60,190,255,transF);
+  drawProbe(ctxCi,PX,PY+2*(PH+PG),PW,PH,'VOUT','@ C_L node',vNow.toFixed(3), vNow/0.90,    false,vC);
+
+  // Subtle dashed leader lines to circuit nodes
+  ctxCi.save(); ctxCi.setLineDash([2,6]); ctxCi.lineWidth=0.7;
+  const leads=[
+    {col:vxC,  py:PY+PH/2,       tx:C.VX_jx+10, ty:C.VX_jy},
+    {col:iC,   py:PY+PH+PG+PH/2, tx:C.TX+5,     ty:C.OUT_y},
+    {col:vC,   py:PY+2*(PH+PG)+PH/2, tx:C.CL_x+plW, ty:C.CL_t+18},
+  ];
+  leads.forEach(l=>{
+    ctxCi.strokeStyle=l.col+'66';
+    ctxCi.beginPath(); ctxCi.moveTo(PX,l.py); ctxCi.lineTo(l.tx,l.ty); ctxCi.stroke();
+  });
+  ctxCi.setLineDash([]); ctxCi.restore();
+
+  ctxCi.restore(); // pop scale/translate
+}
+
+// ── Animation loop ────────────────────────────────────────
+function animate(ts){
+  if(playing&&lastTS!==null){
+    const dt=(ts-lastTS)/1000;
+    t+=dt*speed/TOTAL_S;
+    if(t>=1){
+      t=0; // LOOP — keep running, don't stop
+    }
+  }
+  lastTS=ts;
+
+  // Phase badge
+  const badge=document.getElementById('phase-badge');
+  const wc=t<=TNL?'badge-nl':'badge-l';
+  if(badge.className!==wc){
+    badge.className=wc;
+    badge.textContent=t<=TNL?'NON-LINEAR SETTLING':'LINEAR SETTLING';
+  }
+
+  drawAllPlots();
+  drawCircuit(ts);
+
+  document.getElementById('tl-fill').style.width=(t*100)+'%';
+  document.getElementById('tl-knob').style.left=(t*100)+'%';
+  // Display as μs (label only, no rescaling)
+  document.getElementById('time-disp').textContent=(t*TOTAL_S).toFixed(2)+' μs';
+
+  requestAnimationFrame(animate);
+}
+
+// ── Controls ──────────────────────────────────────────────
+document.getElementById('btn-play').addEventListener('click',()=>{
+  playing=!playing; lastTS=null;
+  document.getElementById('btn-play').textContent=playing?'⏸ PAUSE':'▶ PLAY';
+});
+document.getElementById('btn-reset').addEventListener('click',()=>{
+  t=0; playing=true; lastTS=null;
+  document.getElementById('btn-play').textContent='⏸ PAUSE';
+});
+document.querySelectorAll('.speed-btn').forEach(b=>{
+  b.addEventListener('click',()=>{
+    speed=parseFloat(b.dataset.s);
+    document.querySelectorAll('.speed-btn').forEach(x=>x.classList.remove('active'));
+    b.classList.add('active');
+  });
+});
+
+// Timeline scrub
+const tlW=document.getElementById('tl-wrap');
+let drag=false;
+function scrub(e){
+  const r=tlW.getBoundingClientRect();
+  t=clamp(((e.touches?e.touches[0].clientX:e.clientX)-r.left)/r.width,0,1);
+  lastTS=null;
+}
+tlW.addEventListener('mousedown',e=>{drag=true;scrub(e);});
+window.addEventListener('mousemove',e=>{if(drag)scrub(e);});
+window.addEventListener('mouseup',()=>drag=false);
+tlW.addEventListener('touchstart',e=>scrub(e),{passive:true});
+tlW.addEventListener('touchmove', e=>scrub(e),{passive:true});
+
+// ── Init ──────────────────────────────────────────────────
+window.addEventListener('resize',resize);
+resize();
+requestAnimationFrame(animate);
 </script>
 </body>
 </html>
