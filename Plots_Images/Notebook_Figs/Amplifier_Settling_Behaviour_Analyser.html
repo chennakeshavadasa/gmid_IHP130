@@ -1,11 +1,4 @@
 <!DOCTYPE html>
-<!--
-  Dynamic Amplifier Settling · Two-Phase Sigmoid-Stitched Model · CAC 2025 / VLSI 2026
-  V_dyn = (1−W)·V_p1 + W·V_p2   W=σ(β·(t−T_tr))
-  V_p1 = V0 + ΔV·(1−exp(−t/τ₁))        τ₁ = Ron·C_L  (fast)
-  V_p2 = V_f − ε_tr·exp(−max(t−T_tr,0)/τ₂)  τ₂ = C_L/Gm (slow)
-  V_ota= V0 + ΔV·(1−exp(−t/τ₂))        same τ₂, full swing
--->
 <html lang="en">
 <head>
 <meta charset="UTF-8">
@@ -14,129 +7,90 @@
 <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Rajdhani:wght@400;600;700&display=swap" rel="stylesheet">
 <style>
 :root {
-  --bg:    #050911;
-  --panel: #060c18;
-  --bd:    #0e1f3a;
-  --bd2:   #162448;
-  --txt:   #c8e0f8;
-  --txt2:  #80aac8;
-  --txt3:  #4a6a8a;
-  --p1:    #ff5544;   /* Phase 1 — large-signal, red  */
-  --p2:    #22aaff;   /* Phase 2 — small-signal, blue */
-  --ota:   #cc77ff;   /* Linear OTA, purple           */
-  --band:  #ffcc44;   /* ±1% settling band, amber     */
-  --ss:    #33ff99;   /* Settled / steady-state       */
-  --acc:   #4488ff;
+  --bg:    #050911; --panel: #060c18; --bd: #0e1f3a; --bd2: #162448;
+  --txt:   #c8e0f8; --txt2: #80aac8; --txt3: #4a6a8a;
+  --p1:    #ff5544; --p2: #22aaff; --ota: #cc77ff; --band: #ffcc44; --ss: #33ff99;
 }
-*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
-html, body { width: 100%; height: 540px; overflow: hidden;
-  background: var(--bg); font-family: 'Rajdhani', sans-serif; color: var(--txt); }
-#app { display: flex; flex-direction: column; height: 540px; }
+*,*::before,*::after{box-sizing:border-box;margin:0;padding:0}
+html,body{width:100%;height:540px;overflow:hidden;background:var(--bg);
+  font-family:'Rajdhani',sans-serif;color:var(--txt)}
+#app{display:flex;flex-direction:column;height:540px}
 
-/* ── HEADER ── */
-#hdr {
-  display: flex; align-items: center; gap: 12px;
-  padding: 0 16px; height: 42px; flex-shrink: 0;
-  background: var(--panel); border-bottom: 1px solid var(--bd2);
-}
-#hdr-title {
-  font-family: 'Share Tech Mono', monospace;
-  font-size: 13px; letter-spacing: 2px; color: #6ad0ff; font-weight: bold;
-  white-space: nowrap;
-}
-#phase-badge {
-  padding: 3px 12px; border-radius: 2px; font-size: 11px;
-  font-weight: 700; letter-spacing: 2px; text-transform: uppercase;
-  transition: all .4s; white-space: nowrap;
-  font-family: 'Share Tech Mono', monospace;
-}
-.badge-p1 { background: rgba(255,85,68,.22); border: 1px solid var(--p1);
-             color: #ff9988; box-shadow: 0 0 12px rgba(255,85,68,.35); }
-.badge-p2 { background: rgba(34,170,255,.22); border: 1px solid var(--p2);
-             color: #88ddff; box-shadow: 0 0 12px rgba(34,170,255,.35); }
-.badge-ss { background: rgba(51,255,153,.18); border: 1px solid var(--ss);
-             color: #99ffcc; box-shadow: 0 0 12px rgba(51,255,153,.30); }
-#hdr-right { margin-left: auto; font-family: 'Share Tech Mono', monospace;
-             font-size: 11px; color: var(--txt3); white-space: nowrap; }
+#hdr{display:flex;align-items:center;gap:12px;padding:0 16px;height:42px;
+  flex-shrink:0;background:var(--panel);border-bottom:1px solid var(--bd2)}
+#hdr-title{font-family:'Share Tech Mono',monospace;font-size:13px;letter-spacing:2px;
+  color:#6ad0ff;font-weight:bold;white-space:nowrap}
+#phase-badge{padding:3px 12px;border-radius:2px;font-size:11px;font-weight:700;
+  letter-spacing:2px;text-transform:uppercase;transition:all .4s;white-space:nowrap;
+  font-family:'Share Tech Mono',monospace}
+.badge-p1{background:rgba(255,85,68,.22);border:1px solid var(--p1);
+  color:#ff9988;box-shadow:0 0 12px rgba(255,85,68,.35)}
+.badge-p2{background:rgba(34,170,255,.22);border:1px solid var(--p2);
+  color:#88ddff;box-shadow:0 0 12px rgba(34,170,255,.35)}
+.badge-ss{background:rgba(51,255,153,.18);border:1px solid var(--ss);
+  color:#99ffcc;box-shadow:0 0 12px rgba(51,255,153,.30)}
+#hdr-right{margin-left:auto;font-family:'Share Tech Mono',monospace;
+  font-size:11px;color:var(--txt3);white-space:nowrap}
 
-/* ── BODY ── */
-#body { display: flex; flex: 1; min-height: 0; }
-#sp   { flex: 1; min-width: 0; display: flex; flex-direction: column;
-        padding: 7px 6px 6px 8px; gap: 5px; }
-canvas#sc { flex: 1; min-height: 0; display: block; cursor: crosshair;
-            border-radius: 2px; border: 1px solid var(--bd2); background: #030710; }
+#body{display:flex;flex:1;min-height:0}
+#sp{flex:1;min-width:0;display:flex;flex-direction:column;padding:7px 6px 6px 8px;gap:5px}
+canvas#sc{flex:1;min-height:0;display:block;cursor:crosshair;
+  border-radius:2px;border:1px solid var(--bd2);background:#030710}
 
-/* ── TRANSPORT ── */
-#tp { display: flex; align-items: center; gap: 5px; flex-shrink: 0; }
-.btn { font-size: 12px; padding: 5px 12px; border-radius: 2px; cursor: pointer;
-       border: 1px solid var(--bd2); background: #0c1b30; color: #88bce0;
-       font-family: 'Share Tech Mono', monospace; letter-spacing: .5px;
-       transition: all .12s; white-space: nowrap; }
-.btn:hover { background: #162a50; color: #c8e8ff; }
-.btn.on { background: #183060; border-color: #2a5a9a; color: #e0f0ff; }
-.spd { display: flex; gap: 2px; }
-#td { font-family: 'Share Tech Mono', monospace; font-size: 12px;
-      color: #80c0e8; margin-left: auto; padding: 5px 10px;
-      background: #0c1b30; border: 1px solid var(--bd); border-radius: 2px;
-      min-width: 120px; text-align: right; font-weight: bold; }
+#tp{display:flex;align-items:center;gap:5px;flex-shrink:0}
+.btn{font-size:12px;padding:5px 12px;border-radius:2px;cursor:pointer;
+  border:1px solid var(--bd2);background:#0c1b30;color:#88bce0;
+  font-family:'Share Tech Mono',monospace;letter-spacing:.5px;
+  transition:all .12s;white-space:nowrap}
+.btn:hover{background:#162a50;color:#c8e8ff}
+.btn.on{background:#183060;border-color:#2a5a9a;color:#e0f0ff}
+.spd{display:flex;gap:2px}
+#td{font-family:'Share Tech Mono',monospace;font-size:12px;color:#80c0e8;
+  margin-left:auto;padding:5px 10px;background:#0c1b30;
+  border:1px solid var(--bd);border-radius:2px;min-width:122px;text-align:right;font-weight:bold}
 
-/* ── SIDEBAR ── */
-#sb { width: 258px; flex-shrink: 0; border-left: 1px solid var(--bd2);
-      overflow-y: auto; display: flex; flex-direction: column; background: var(--panel); }
-#sb::-webkit-scrollbar { width: 3px; }
-#sb::-webkit-scrollbar-thumb { background: var(--bd2); }
+#sb{width:252px;flex-shrink:0;border-left:1px solid var(--bd2);
+  overflow-y:auto;display:flex;flex-direction:column;background:var(--panel)}
+#sb::-webkit-scrollbar{width:3px}
+#sb::-webkit-scrollbar-thumb{background:var(--bd2)}
+.sec{padding:11px 13px;border-bottom:1px solid var(--bd)}
+.st{font-family:'Share Tech Mono',monospace;font-size:10px;font-weight:bold;
+  letter-spacing:1.5px;text-transform:uppercase;color:var(--txt2);margin-bottom:9px}
 
-.sec { padding: 11px 13px; border-bottom: 1px solid var(--bd); }
-.st  { font-family: 'Share Tech Mono', monospace; font-size: 10px;
-       font-weight: bold; letter-spacing: 1.5px; text-transform: uppercase;
-       color: var(--txt2); margin-bottom: 9px; }
+.mg{display:grid;grid-template-columns:1fr 1fr;gap:4px}
+.mc{background:#070f20;border-radius:2px;padding:7px 9px;border:1px solid var(--bd)}
+.mc.g{border-color:#0e3824}.mc.r{border-color:#3a1210}
+.mc.b{border-color:#0d2040}.mc.a{border-color:#3a2a0a}
+.ml{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--txt3);
+  text-transform:uppercase;letter-spacing:.5px;margin-bottom:2px}
+.mv{font-family:'Share Tech Mono',monospace;font-size:18px;
+  font-weight:bold;line-height:1;color:var(--txt)}
+.mv.fast{color:var(--ss);text-shadow:0 0 10px rgba(51,255,153,.5)}
+.mv.slow{color:var(--p1);text-shadow:0 0 10px rgba(255,85,68,.5)}
+.mv.neu {color:var(--p2);text-shadow:0 0 10px rgba(34,170,255,.5)}
+.mv.amb {color:var(--band);text-shadow:0 0 10px rgba(255,204,68,.5)}
+.mu{font-size:9px;color:var(--txt3);font-weight:400;margin-left:2px}
 
-/* metric cards */
-.mg { display: grid; grid-template-columns: 1fr 1fr; gap: 4px; }
-.mc { background: #070f20; border-radius: 2px; padding: 7px 9px; border: 1px solid var(--bd); }
-.mc.g { border-color: #0e3824; } .mc.r { border-color: #3a1210; }
-.mc.b { border-color: #0d2040; } .mc.a { border-color: #3a2a0a; }
-.ml { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--txt3);
-      text-transform: uppercase; letter-spacing: .5px; margin-bottom: 2px; }
-.mv { font-family: 'Share Tech Mono', monospace; font-size: 18px;
-      font-weight: bold; line-height: 1; color: var(--txt); }
-.mv.fast { color: var(--ss);  text-shadow: 0 0 10px rgba(51,255,153,.5); }
-.mv.slow { color: var(--p1);  text-shadow: 0 0 10px rgba(255,85,68,.5);  }
-.mv.neu  { color: var(--p2);  text-shadow: 0 0 10px rgba(34,170,255,.5); }
-.mv.amb  { color: var(--band);text-shadow: 0 0 10px rgba(255,204,68,.5); }
-.mu { font-size: 9px; color: var(--txt3); font-weight: 400; margin-left: 2px; }
+.pr{display:flex;align-items:flex-start;gap:8px;padding:6px 6px;
+  border-radius:2px;color:var(--txt3);margin-bottom:3px;transition:all .2s}
+.pr:last-child{margin-bottom:0}
+.pr.on{background:#0a1428;color:var(--txt)}
+.pd{width:8px;height:8px;border-radius:50%;flex-shrink:0;opacity:.18;
+  transition:all .22s;margin-top:4px}
+.pr.on .pd{opacity:1;box-shadow:0 0 8px currentColor}
+.ps{font-size:13px;font-weight:700;line-height:1.2}
+.pd2{font-family:'Share Tech Mono',monospace;font-size:9px;
+  color:var(--txt3);margin-top:3px;line-height:1.5}
 
-/* phase rows */
-.pr { display: flex; align-items: flex-start; gap: 8px; padding: 6px 6px;
-      border-radius: 2px; color: var(--txt3); margin-bottom: 3px; transition: all .2s; }
-.pr:last-child { margin-bottom: 0; }
-.pr.on { background: #0a1428; color: var(--txt); }
-.pd { width: 8px; height: 8px; border-radius: 50%; flex-shrink: 0;
-      opacity: .18; transition: all .22s; margin-top: 4px; }
-.pr.on .pd { opacity: 1; box-shadow: 0 0 8px currentColor; }
-.ps  { font-size: 13px; font-weight: 700; line-height: 1.2; }
-.pd2 { font-family: 'Share Tech Mono', monospace; font-size: 9px;
-       color: var(--txt3); margin-top: 3px; line-height: 1.5; }
+.li{display:flex;align-items:center;gap:9px;margin-bottom:9px}
+.li:last-child{margin-bottom:0}
+.ls{width:22px;height:3px;border-radius:1px;flex-shrink:0}
+.ll{font-size:13px;font-weight:600;color:#d8f0ff;line-height:1.3}
+.ls2{font-family:'Share Tech Mono',monospace;font-size:9px;color:var(--txt2)}
 
-/* params table */
-.pt { width: 100%; border-collapse: collapse; }
-.pt td { font-family: 'Share Tech Mono', monospace; font-size: 11px;
-         padding: 4px 0; border-bottom: 1px solid var(--bd); }
-.pt tr:last-child td { border-bottom: none; }
-.pk { color: var(--txt2); } .pv { color: #d8f0ff; text-align: right; font-weight: bold; }
-
-/* legend */
-.li  { display: flex; align-items: center; gap: 9px; margin-bottom: 8px; }
-.li:last-child { margin-bottom: 0; }
-.ls  { width: 20px; height: 3px; border-radius: 1px; flex-shrink: 0; }
-.ll  { font-size: 13px; font-weight: 600; color: #d8f0ff; line-height: 1.3; }
-.ls2 { font-family: 'Share Tech Mono', monospace; font-size: 9px; color: var(--txt2); }
-
-/* footer */
-#ft { display: flex; align-items: center; justify-content: space-between;
-      padding: 3px 12px; border-top: 1px solid var(--bd);
-      background: var(--panel); font-family: 'Share Tech Mono', monospace;
-      font-size: 10px; color: var(--txt3); flex-shrink: 0; }
+#ft{display:flex;align-items:center;justify-content:space-between;
+  padding:3px 12px;border-top:1px solid var(--bd);background:var(--panel);
+  font-family:'Share Tech Mono',monospace;font-size:10px;color:var(--txt3);flex-shrink:0}
 </style>
 </head>
 <body>
@@ -168,24 +122,16 @@ canvas#sc { flex: 1; min-height: 0; display: block; cursor: crosshair;
   <div id="sb">
 
     <div class="sec">
-      <div class="st">⬡ Settling Performance — ±1% Band</div>
+      <div class="st">⬡ Settling Performance — ±1%</div>
       <div class="mg">
-        <div class="mc g">
-          <div class="ml">t_s · Dynamic</div>
-          <div class="mv fast" id="m-td">—</div>
-        </div>
-        <div class="mc r">
-          <div class="ml">t_s · Linear OTA</div>
-          <div class="mv slow" id="m-tl">—</div>
-        </div>
-        <div class="mc b">
-          <div class="ml">Speedup</div>
-          <div class="mv neu" id="m-sp">—</div>
-        </div>
-        <div class="mc a">
-          <div class="ml">ε at T_tr</div>
-          <div class="mv amb" id="m-ep">—</div>
-        </div>
+        <div class="mc g"><div class="ml">t_s · Dynamic</div>
+          <div class="mv fast" id="m-td">—</div></div>
+        <div class="mc r"><div class="ml">t_s · Linear OTA</div>
+          <div class="mv slow" id="m-tl">—</div></div>
+        <div class="mc b"><div class="ml">Speedup</div>
+          <div class="mv neu"  id="m-sp">—</div></div>
+        <div class="mc a"><div class="ml">ε at T_tr</div>
+          <div class="mv amb"  id="m-ep">—</div></div>
       </div>
     </div>
 
@@ -193,77 +139,40 @@ canvas#sc { flex: 1; min-height: 0; display: block; cursor: crosshair;
       <div class="st">⬡ Active Phase — Dynamic Amp</div>
       <div class="pr on" id="ph0" style="color:var(--p1)">
         <div class="pd" style="background:var(--p1)"></div>
-        <div>
-          <div class="ps">Phase 1 — Large-Signal</div>
-          <div class="pd2">High I_tail via Ron<br>τ₁ = Ron · C_L  ≪  τ₂</div>
-        </div>
+        <div><div class="ps">Phase 1 — Large-Signal</div>
+          <div class="pd2">High I_tail via Ron<br>τ₁ = Ron · C_L  ≪  τ₂</div></div>
       </div>
       <div class="pr" id="ph1" style="color:var(--p2)">
         <div class="pd" style="background:var(--p2)"></div>
-        <div>
-          <div class="ps">Phase 2 — Small-Signal</div>
-          <div class="pd2">Gm-driven precision tail<br>τ₂ = C_L / Gm</div>
-        </div>
+        <div><div class="ps">Phase 2 — Small-Signal</div>
+          <div class="pd2">Gm-driven precision tail<br>τ₂ = C_L / Gm</div></div>
       </div>
       <div class="pr" id="ph2" style="color:var(--ss)">
         <div class="pd" style="background:var(--ss)"></div>
-        <div>
-          <div class="ps">Settled — Within ±1%</div>
-          <div class="pd2">V_out flat until next edge</div>
-        </div>
+        <div><div class="ps">Settled — Within ±1%</div>
+          <div class="pd2">V_out flat until next edge</div></div>
       </div>
-    </div>
-
-    <div class="sec">
-      <div class="st">⬡ Model Parameters</div>
-      <table class="pt">
-        <tr><td class="pk">τ₁ = Ron·C_L</td>
-            <td class="pv" style="color:var(--p1)" id="d-t1">—</td></tr>
-        <tr><td class="pk">τ₂ = C_L/Gm</td>
-            <td class="pv" style="color:var(--p2)" id="d-t2">—</td></tr>
-        <tr><td class="pk">τ_OTA  (= τ₂)</td>
-            <td class="pv" style="color:var(--ota)" id="d-to">—</td></tr>
-        <tr><td class="pk">τ₂ / τ₁  ratio</td>
-            <td class="pv" id="d-rat">—</td></tr>
-        <tr><td class="pk">T_tr</td>
-            <td class="pv" id="d-ttr">—</td></tr>
-        <tr><td class="pk">V(T_tr)</td>
-            <td class="pv" id="d-vtr">—</td></tr>
-        <tr><td class="pk">ε_tr (residual)</td>
-            <td class="pv" id="d-eps">—</td></tr>
-        <tr><td class="pk">β (stitch)</td>
-            <td class="pv" id="d-beta">—</td></tr>
-        <tr><td class="pk">Ron / Gm</td>
-            <td class="pv" style="color:var(--band)" id="d-rg">—</td></tr>
-      </table>
     </div>
 
     <div class="sec">
       <div class="st">⬡ Legend</div>
       <div class="li">
-        <div class="ls" style="background:var(--p1)"></div>
-        <div>
-          <div class="ll">Dyn. Amp — Phase 1</div>
-          <div class="ls2">LARGE-SIGNAL  τ₁ = Ron · C_L</div>
-        </div>
+        <div class="ls" style="background:var(--p1);box-shadow:0 0 6px var(--p1)"></div>
+        <div><div class="ll">Dyn. Amp — Phase 1</div>
+          <div class="ls2">LARGE-SIGNAL  τ₁ = Ron · C_L</div></div>
       </div>
       <div class="li">
-        <div class="ls" style="background:var(--p2)"></div>
-        <div>
-          <div class="ll">Dyn. Amp — Phase 2</div>
-          <div class="ls2">SMALL-SIGNAL  τ₂ = C_L / Gm</div>
-        </div>
+        <div class="ls" style="background:var(--p2);box-shadow:0 0 6px var(--p2)"></div>
+        <div><div class="ll">Dyn. Amp — Phase 2</div>
+          <div class="ls2">SMALL-SIGNAL  τ₂ = C_L / Gm</div></div>
       </div>
       <div class="li">
-        <div class="ls" style="background:var(--ota)"></div>
-        <div>
-          <div class="ll">Linear OTA</div>
-          <div class="ls2">SINGLE EXP.  τ_OTA = τ₂  from t=0</div>
-        </div>
+        <div class="ls" style="background:var(--ota);box-shadow:0 0 6px var(--ota)"></div>
+        <div><div class="ll">Linear OTA</div>
+          <div class="ls2">SINGLE EXP.  τ_OTA = τ₂  from t=0</div></div>
       </div>
       <div class="li">
-        <div class="ls" style="background:var(--band);height:1px;
-             border-top:2px dashed var(--band)"></div>
+        <div class="ls" style="height:1px;border-top:2px dashed var(--band)"></div>
         <div><div class="ll">±1% Settling Band</div></div>
       </div>
     </div>
@@ -273,451 +182,397 @@ canvas#sc { flex: 1; min-height: 0; display: block; cursor: crosshair;
 
 <div id="ft">
   <span id="cur">Hover for readout · Click to seek</span>
-  <span>V_dyn = (1−W)·V_p1 + W·V_p2  ·  W = σ(β·(t−T_tr))  ·  Smooth ∀ β</span>
+  <span>V_dyn=(1−W)·V_p1+W·V_p2  ·  W=σ(β·(t−T_tr))  ·  smooth ∀β</span>
 </div>
 </div>
 
 <script>
 'use strict';
 
-// ═══════════════════════════════════════════════════
-//  FIXED MODEL PARAMETERS  (µs, V)
-// ═══════════════════════════════════════════════════
-const TAU1    = 0.030;   // µs  Phase-1  Ron·C_L  (large-signal, fast)
-const TAU2    = 0.120;   // µs  Phase-2  C_L/Gm   (small-signal, slow)
-const T_TR    = 0.100;   // µs  phase-transition time
-const BETA    = 60;      // µs⁻¹  sigmoid sharpness
-const T_PULSE = 1.20;    // µs  half-period (long enough for flat settled region)
-const T_SIM   = T_PULSE * 3;
-const DT      = 3e-4;    // µs  timestep
-const BAND    = 0.01;    // ±1 %
+// ═══════════════════════════════════════════
+//  FIXED PARAMETERS
+// ═══════════════════════════════════════════
+const TAU1=0.030, TAU2=0.120, T_TR=0.100, BETA=60;
+const T_PULSE=1.20, T_SIM=T_PULSE*3, DT=3e-4, BAND=0.01;
 
-// ── Model ───────────────────────────────────────────
-function sig(x) {
-  if (x >  50) return 1; if (x < -50) return 0;
-  return 1 / (1 + Math.exp(-x));
+function sig(x){if(x>50)return 1;if(x<-50)return 0;return 1/(1+Math.exp(-x))}
+
+function dynAmp(tr,V0,Vtgt){
+  if(tr<=0)return V0;
+  const sw=Vtgt-V0;
+  const V1=V0+sw*(1-Math.exp(-T_TR/TAU1));
+  const eps=Vtgt-V1;
+  const vp1=V0+sw*(1-Math.exp(-tr/TAU1));
+  const vp2=Vtgt-eps*Math.exp(-Math.max(0,tr-T_TR)/TAU2);
+  const W=sig(BETA*(tr-T_TR));
+  return (1-W)*vp1+W*vp2;
 }
-function dynAmp(tr, V0, Vtgt) {
-  if (tr <= 0) return V0;
-  const sw  = Vtgt - V0;
-  const V1  = V0 + sw * (1 - Math.exp(-T_TR / TAU1));
-  const eps = Vtgt - V1;
-  const vp1 = V0 + sw * (1 - Math.exp(-tr / TAU1));
-  const vp2 = Vtgt - eps * Math.exp(-Math.max(0, tr - T_TR) / TAU2);
-  return (1 - sig(BETA * (tr - T_TR))) * vp1 + sig(BETA * (tr - T_TR)) * vp2;
-}
-function linOTA(tr, V0, Vtgt) {
-  if (tr <= 0) return V0;
-  return V0 + (Vtgt - V0) * (1 - Math.exp(-tr / TAU2));
+function linOTA(tr,V0,Vtgt){
+  if(tr<=0)return V0;
+  return V0+(Vtgt-V0)*(1-Math.exp(-tr/TAU2));
 }
 
-// ── Simulation ──────────────────────────────────────
-let SIM = {};
-function runSim() {
-  const N  = Math.ceil(T_SIM / DT) + 1;
-  const t  = new Float64Array(N);
-  const yd = new Float64Array(N);
-  const yl = new Float64Array(N);
-  for (let i = 0; i < N; i++) t[i] = i * DT;
-  const NP = Math.round(T_PULSE / DT);
-  let Vd = 0, Vl = 0;
-  for (let seg = 0; seg < 3; seg++) {
-    const Vtgt = (seg % 2 === 0) ? 1 : 0;
-    const V0d = Vd, V0l = Vl;
-    const i0 = seg * NP, i1 = Math.min(N, i0 + NP);
-    for (let i = i0; i < i1; i++) {
-      const tr = (i - i0) * DT;
-      yd[i] = dynAmp(tr, V0d, Vtgt);
-      yl[i] = linOTA(tr, V0l, Vtgt);
+let SIM={};
+function runSim(){
+  const N=Math.ceil(T_SIM/DT)+1;
+  const t=new Float64Array(N),yd=new Float64Array(N),yl=new Float64Array(N);
+  for(let i=0;i<N;i++)t[i]=i*DT;
+  const NP=Math.round(T_PULSE/DT);
+  let Vd=0,Vl=0;
+  for(let seg=0;seg<3;seg++){
+    const Vtgt=(seg%2===0)?1:0,V0d=Vd,V0l=Vl;
+    const i0=seg*NP,i1=Math.min(N,i0+NP);
+    for(let i=i0;i<i1;i++){
+      const tr=(i-i0)*DT;
+      yd[i]=dynAmp(tr,V0d,Vtgt);
+      yl[i]=linOTA(tr,V0l,Vtgt);
     }
-    Vd = yd[i1 - 1]; Vl = yl[i1 - 1];
+    Vd=yd[i1-1];Vl=yl[i1-1];
   }
-  let ts_d = null, ts_o = null;
-  for (let i = 1; i < Math.min(N, NP); i++) {
-    if (ts_d === null && Math.abs(yd[i] - 1) < BAND) ts_d = t[i];
-    if (ts_o === null && Math.abs(yl[i] - 1) < BAND) ts_o = t[i];
+  let ts_d=null,ts_o=null;
+  for(let i=1;i<Math.min(N,NP);i++){
+    if(ts_d===null&&Math.abs(yd[i]-1)<BAND)ts_d=t[i];
+    if(ts_o===null&&Math.abs(yl[i]-1)<BAND)ts_o=t[i];
   }
-  SIM = { t, yd, yl, N, NP, ts_d, ts_o };
+  SIM={t,yd,yl,N,NP,ts_d,ts_o};
 
-  const Vt1 = dynAmp(T_TR, 0, 1), eps = 1 - Vt1;
-  document.getElementById('d-t1').textContent   = `${(TAU1*1000).toFixed(0)} ns`;
-  document.getElementById('d-t2').textContent   = `${(TAU2*1000).toFixed(0)} ns`;
-  document.getElementById('d-to').textContent   = `${(TAU2*1000).toFixed(0)} ns`;
-  document.getElementById('d-rat').textContent  = `${(TAU2/TAU1).toFixed(1)} ×`;
-  document.getElementById('d-ttr').textContent  = `${(T_TR*1000).toFixed(0)} ns`;
-  document.getElementById('d-vtr').textContent  = `${Vt1.toFixed(4)} V`;
-  document.getElementById('d-eps').textContent  = `${(eps*100).toFixed(2)} %`;
-  document.getElementById('d-beta').textContent = `${BETA} µs⁻¹`;
-  document.getElementById('d-rg').textContent   = `${(TAU1/TAU2).toFixed(3)}`;
-  const fmt = v => v != null
-    ? `${(v*1000).toFixed(0)}<span class="mu">ns</span>`
-    : `>${(T_PULSE*1000).toFixed(0)}<span class="mu">ns</span>`;
-  document.getElementById('m-td').innerHTML = fmt(ts_d);
-  document.getElementById('m-tl').innerHTML = fmt(ts_o);
-  const sp = ts_d && ts_o ? (ts_o / ts_d).toFixed(2) : '—';
-  document.getElementById('m-sp').innerHTML = `${sp}<span class="mu">×</span>`;
-  document.getElementById('m-ep').innerHTML = `${(eps*100).toFixed(1)}<span class="mu">%</span>`;
+  const Vt1=dynAmp(T_TR,0,1),eps=1-Vt1;
+  const fmt=v=>v!=null?`${(v*1000).toFixed(0)}<span class="mu">ns</span>`:`>${(T_PULSE*1000).toFixed(0)}<span class="mu">ns</span>`;
+  document.getElementById('m-td').innerHTML=fmt(ts_d);
+  document.getElementById('m-tl').innerHTML=fmt(ts_o);
+  const sp=ts_d&&ts_o?(ts_o/ts_d).toFixed(2):'—';
+  document.getElementById('m-sp').innerHTML=`${sp}<span class="mu">×</span>`;
+  document.getElementById('m-ep').innerHTML=`${(eps*100).toFixed(1)}<span class="mu">%</span>`;
 }
 
-// ═══════════════════════════════════════════════════
-//  CANVAS RENDERING
-// ═══════════════════════════════════════════════════
-const canvas = document.getElementById('sc');
-const ctx    = canvas.getContext('2d');
-let DPR = 1, W = 0, H = 0, PW = 0, PH = 0;
-const M   = { t: 36, r: 20, b: 40, l: 60 };
-const VLO = -0.22, VHI = 1.30, VSP = VHI - VLO;
-const V_TICKS = [-0.2, 0, 0.2, 0.4, 0.6, 0.8, 1.0, 1.2];
+// ═══════════════════════════════════════════
+//  CANVAS
+// ═══════════════════════════════════════════
+const canvas=document.getElementById('sc');
+const ctx=canvas.getContext('2d');
+let DPR=1,W=0,H=0,PW=0,PH=0;
+const M={t:36,r:20,b:40,l:60};
+const VLO=-0.22,VHI=1.30,VSP=VHI-VLO;
+const V_TICKS=[-0.2,0,.2,.4,.6,.8,1,1.2];
 
-function tx(t)  { return M.l + (t / T_SIM) * PW; }
-function ty(v)  { return M.t + (1 - (v - VLO) / VSP) * PH; }
-function itx(x) { return ((x - M.l) / PW) * T_SIM; }
+function tx(t){return M.l+(t/T_SIM)*PW}
+function ty(v){return M.t+(1-(v-VLO)/VSP)*PH}
+function itx(x){return((x-M.l)/PW)*T_SIM}
 
-function resize() {
-  DPR = Math.min(window.devicePixelRatio || 1, 2);
-  const r = canvas.getBoundingClientRect();
-  W = r.width; H = r.height;
-  canvas.width  = W * DPR; canvas.height = H * DPR;
-  ctx.setTransform(DPR, 0, 0, DPR, 0, 0);
-  PW = W - M.l - M.r; PH = H - M.t - M.b;
+function resize(){
+  DPR=Math.min(window.devicePixelRatio||1,2);
+  const r=canvas.getBoundingClientRect();
+  W=r.width;H=r.height;
+  canvas.width=W*DPR;canvas.height=H*DPR;
+  ctx.setTransform(DPR,0,0,DPR,0,0);
+  PW=W-M.l-M.r;PH=H-M.t-M.b;
 }
-function clp() { ctx.beginPath(); ctx.rect(M.l, M.t, PW, PH); ctx.clip(); }
-function mf(sz, mono) {
-  ctx.font = `bold ${sz}px ${mono ? "'Share Tech Mono'" : "'Rajdhani'"}, monospace`;
-}
+function clp(){ctx.beginPath();ctx.rect(M.l,M.t,PW,PH);ctx.clip()}
+function mf(sz,mono){ctx.font=`bold ${sz}px ${mono?"'Share Tech Mono'":"'Rajdhani'"},monospace`}
 
-function phaseOf(idx) {
-  if (!SIM.NP) return 0;
-  const seg = Math.floor(idx / SIM.NP), Vtgt = (seg % 2 === 0) ? 1 : 0;
-  if (Math.abs(SIM.yd[idx] - Vtgt) < BAND) return 2;
-  return (idx - seg * SIM.NP) < Math.round(T_TR / DT) ? 0 : 1;
+function phaseOf(idx){
+  if(!SIM.NP)return 0;
+  const seg=Math.floor(idx/SIM.NP),Vtgt=(seg%2===0)?1:0;
+  if(Math.abs(SIM.yd[idx]-Vtgt)<BAND)return 2;
+  return(idx-seg*SIM.NP)<Math.round(T_TR/DT)?0:1;
 }
 
-let mX = -1, mY = -1;
+let mX=-1,mY=-1;
 
-function draw(pIdx) {
-  if (!W || !SIM.N) return;
-  ctx.clearRect(0, 0, W, H);
-  ctx.fillStyle = '#030710'; ctx.fillRect(0, 0, W, H);
+// Draw a single waveform from index 0 to endIdx, phase-coloured for dynamic amp
+function drawTrace(arr, endIdx, isOTA) {
+  if (endIdx <= 0) return;
+  const NP  = SIM.NP;
+  const NTR = Math.round(T_TR / DT);
 
-  // ── Phase region tints ──────────────────────────
-  ctx.save(); clp();
-  for (let seg = 0; seg < 3; seg++) {
-    const t0 = seg * T_PULSE, tT = t0 + T_TR, t1 = t0 + T_PULSE;
-    ctx.fillStyle = 'rgba(255,85,68,0.028)';
-    ctx.fillRect(tx(t0), M.t, tx(Math.min(tT, T_SIM)) - tx(t0), PH);
-    ctx.fillStyle = 'rgba(34,170,255,0.020)';
-    ctx.fillRect(tx(tT), M.t, tx(Math.min(t1, T_SIM)) - tx(tT), PH);
-  }
-  ctx.restore();
-
-  // ── Grid ───────────────────────────────────────
-  ctx.save(); clp();
-  // Time ticks at 0.60 µs intervals
-  for (let tv = 0; tv <= T_SIM + 1e-9; tv += 0.60) {
-    const x = tx(tv);
-    ctx.strokeStyle = 'rgba(20,36,72,0.9)'; ctx.lineWidth = 1;
-    ctx.beginPath(); ctx.moveTo(x, M.t); ctx.lineTo(x, M.t + PH); ctx.stroke();
-    for (let mt = tv + 0.15; mt < tv + 0.60 - 0.05; mt += 0.15) {
-      if (mt > T_SIM) break;
-      ctx.strokeStyle = 'rgba(12,20,45,0.6)'; ctx.lineWidth = 0.4;
-      ctx.beginPath(); ctx.moveTo(tx(mt), M.t); ctx.lineTo(tx(mt), M.t + PH); ctx.stroke();
+  if (isOTA) {
+    // Single colour — purple
+    ctx.beginPath();
+    for (let i = 0; i <= Math.min(endIdx, SIM.N - 1); i++) {
+      const x = tx(SIM.t[i]), y = ty(arr[i]);
+      i === 0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
     }
-  }
-  V_TICKS.forEach(vv => {
-    const y = ty(vv), hi = vv === 0 || vv === 1;
-    ctx.strokeStyle = hi ? 'rgba(42,74,128,0.9)' : 'rgba(16,28,58,0.7)';
-    ctx.lineWidth = hi ? 1.2 : 0.4;
-    ctx.beginPath(); ctx.moveTo(M.l, y); ctx.lineTo(M.l + PW, y); ctx.stroke();
-  });
-  ctx.restore();
+    ctx.strokeStyle = '#cc77ff';
+    ctx.lineWidth   = 2.8;
+    ctx.shadowColor = 'rgba(204,119,255,0.55)';
+    ctx.shadowBlur  = 10;
+    ctx.stroke();
+    ctx.shadowBlur  = 0;
+  } else {
+    // Phase-coloured: red for Phase-1 segments, blue for Phase-2
+    for (let seg = 0; seg < 3; seg++) {
+      const i0 = seg * NP;
+      const iT = Math.min(SIM.N, i0 + NTR);
+      const i1 = Math.min(SIM.N, i0 + NP);
 
-  // ── ±1% settling band ──────────────────────────
-  ctx.save(); clp();
-  [[0.99, 1.01], [-0.01, 0.01]].forEach(([lo, hi]) => {
-    ctx.fillStyle = 'rgba(255,204,68,0.040)';
-    ctx.fillRect(M.l, ty(hi), PW, ty(lo) - ty(hi));
-    ctx.strokeStyle = 'rgba(255,204,68,0.45)'; ctx.lineWidth = 1; ctx.setLineDash([5, 5]);
-    [lo, hi].forEach(v => {
-      ctx.beginPath(); ctx.moveTo(M.l, ty(v)); ctx.lineTo(M.l + PW, ty(v)); ctx.stroke();
-    });
-    ctx.setLineDash([]);
-  });
-  ctx.restore();
-
-  // ── ±1% band label ─────────────────────────────
-  ctx.save(); clp();
-  mf(10, true); ctx.textAlign = 'right'; ctx.fillStyle = 'rgba(255,204,68,0.80)';
-  ctx.fillText('±1%', M.l + PW - 4, ty(1.01) - 4);
-  ctx.restore();
-
-  // ── T_tr markers ───────────────────────────────
-  ctx.save(); clp();
-  for (let seg = 0; seg < 3; seg++) {
-    const xT = tx(seg * T_PULSE + T_TR);
-    if (xT > M.l + PW) continue;
-    ctx.strokeStyle = 'rgba(100,140,220,0.55)'; ctx.lineWidth = 1.2; ctx.setLineDash([3, 5]);
-    ctx.beginPath(); ctx.moveTo(xT, M.t); ctx.lineTo(xT, M.t + PH); ctx.stroke();
-    ctx.setLineDash([]);
-    mf(10, true); ctx.fillStyle = 'rgba(120,165,255,0.85)'; ctx.textAlign = 'left';
-    ctx.fillText('T_tr', xT + 3, M.t + 13);
-  }
-  ctx.restore();
-
-  // ── Settling time markers ──────────────────────
-  ctx.save(); clp();
-  if (SIM.ts_d) {
-    const xs = tx(SIM.ts_d);
-    ctx.strokeStyle = 'rgba(51,255,153,0.55)'; ctx.lineWidth = 1.2; ctx.setLineDash([3, 4]);
-    ctx.beginPath(); ctx.moveTo(xs, M.t); ctx.lineTo(xs, M.t + PH); ctx.stroke();
-    ctx.setLineDash([]);
-    mf(10, true); ctx.fillStyle = 'rgba(51,255,153,0.95)';
-    ctx.textAlign = 'left';
-    ctx.fillText(`t_s(dyn) = ${(SIM.ts_d * 1000).toFixed(0)} ns`, xs + 3, M.t + 27);
-  }
-  if (SIM.ts_o) {
-    const xs = tx(SIM.ts_o);
-    ctx.strokeStyle = 'rgba(204,119,255,0.50)'; ctx.lineWidth = 1.2; ctx.setLineDash([3, 4]);
-    ctx.beginPath(); ctx.moveTo(xs, M.t); ctx.lineTo(xs, M.t + PH); ctx.stroke();
-    ctx.setLineDash([]);
-    mf(10, true); ctx.fillStyle = 'rgba(204,119,255,0.95)';
-    ctx.textAlign = 'left';
-    ctx.fillText(`t_s(OTA) = ${(SIM.ts_o * 1000).toFixed(0)} ns`, xs + 3, M.t + 13);
-  }
-  ctx.restore();
-
-  // ── Phase / region labels ───────────────────────
-  ctx.save(); clp();
-  mf(11, true); ctx.textAlign = 'center';
-  const xP1 = (tx(0) + tx(T_TR)) / 2, xP2 = (tx(T_TR) + tx(T_PULSE)) / 2;
-  ctx.fillStyle = 'rgba(255,85,68,0.60)';  ctx.fillText('NL', xP1, M.t + 13);
-  ctx.fillStyle = 'rgba(34,170,255,0.60)'; ctx.fillText('L',  xP2, M.t + 13);
-  ctx.restore();
-
-  // ── Axes frame ─────────────────────────────────
-  ctx.strokeStyle = 'rgba(38,56,120,0.8)'; ctx.lineWidth = 1.5;
-  ctx.strokeRect(M.l, M.t, PW, PH);
-
-  // ── Axis tick labels ───────────────────────────
-  mf(11, true); ctx.fillStyle = '#88b8d8'; ctx.textAlign = 'center';
-  for (let tv = 0; tv <= T_SIM + 1e-9; tv += 0.60)
-    ctx.fillText(tv.toFixed(2), tx(tv), M.t + PH + 16);
-  mf(13, false); ctx.fillStyle = '#a0c8e8';
-  ctx.fillText('Time (µs)', M.l + PW / 2, H - 3);
-
-  ctx.textAlign = 'right'; mf(11, true); ctx.fillStyle = '#88b8d8';
-  V_TICKS.forEach(vv => ctx.fillText(vv.toFixed(1), M.l - 6, ty(vv) + 4));
-  ctx.save();
-  ctx.translate(13, M.t + PH / 2); ctx.rotate(-Math.PI / 2);
-  ctx.textAlign = 'center'; mf(13, false); ctx.fillStyle = '#a0c8e8';
-  ctx.fillText('V_out (V)', 0, 0);
-  ctx.restore();
-
-  // ── Plot title ─────────────────────────────────
-  mf(13, false); ctx.textAlign = 'left'; ctx.fillStyle = '#c8e0f8';
-  ctx.fillText('Settling: Dynamic Amplifier (two-phase) vs Linear OTA', M.l + 2, M.t - 12);
-
-  // ── Ghost traces ───────────────────────────────
-  ctx.save(); clp();
-  ctx.beginPath();
-  for (let i = 0; i < SIM.N; i++) {
-    const x = tx(SIM.t[i]), y = ty(SIM.yl[i]);
-    i ? ctx.lineTo(x, y) : ctx.moveTo(x, y);
-  }
-  ctx.strokeStyle = 'rgba(204,119,255,1)'; ctx.lineWidth = 1.5;
-  ctx.globalAlpha = 0.18; ctx.stroke(); ctx.globalAlpha = 1;
-
-  const NP = SIM.NP, NTR = Math.round(T_TR / DT);
-  for (let seg = 0; seg < 3; seg++) {
-    const i0 = seg * NP, iT = Math.min(SIM.N, i0 + NTR), i1 = Math.min(SIM.N, i0 + NP);
-    const gSeg = (from, to, clr) => {
-      ctx.beginPath();
-      for (let i = from; i < to; i++) {
-        const x = tx(SIM.t[i]), y = ty(SIM.yd[i]);
-        i === from ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+      // Phase 1 portion
+      const e1 = Math.min(iT, endIdx + 1);
+      if (e1 > i0) {
+        ctx.beginPath();
+        for (let i = i0; i < e1; i++) {
+          const x = tx(SIM.t[i]), y = ty(arr[i]);
+          i === i0 ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = '#ff5544';
+        ctx.lineWidth   = 3.0;
+        ctx.shadowColor = 'rgba(255,85,68,0.60)';
+        ctx.shadowBlur  = 12;
+        ctx.stroke();
+        ctx.shadowBlur  = 0;
       }
-      ctx.strokeStyle = clr; ctx.lineWidth = 1.5;
-      ctx.globalAlpha = 0.18; ctx.stroke(); ctx.globalAlpha = 1;
-    };
-    gSeg(i0, iT, 'rgba(255,85,68,1)');
-    gSeg(iT, i1, 'rgba(34,170,255,1)');
+
+      // Phase 2 portion
+      if (endIdx >= iT && iT < i1) {
+        const e2 = Math.min(i1, endIdx + 1);
+        ctx.beginPath();
+        for (let i = iT; i < e2; i++) {
+          const x = tx(SIM.t[i]), y = ty(arr[i]);
+          i === iT ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+        }
+        ctx.strokeStyle = '#22aaff';
+        ctx.lineWidth   = 3.0;
+        ctx.shadowColor = 'rgba(34,170,255,0.60)';
+        ctx.shadowBlur  = 12;
+        ctx.stroke();
+        ctx.shadowBlur  = 0;
+      }
+    }
+  }
+}
+
+function draw(pIdx){
+  if(!W||!SIM.N)return;
+  ctx.clearRect(0,0,W,H);
+  ctx.fillStyle='#030710';ctx.fillRect(0,0,W,H);
+
+  // Phase region tints
+  ctx.save();clp();
+  for(let seg=0;seg<3;seg++){
+    const t0=seg*T_PULSE,tT=t0+T_TR,t1=t0+T_PULSE;
+    ctx.fillStyle='rgba(255,85,68,0.032)';
+    ctx.fillRect(tx(t0),M.t,tx(Math.min(tT,T_SIM))-tx(t0),PH);
+    ctx.fillStyle='rgba(34,170,255,0.024)';
+    ctx.fillRect(tx(tT),M.t,tx(Math.min(t1,T_SIM))-tx(tT),PH);
   }
   ctx.restore();
 
-  // ── Animated live traces ───────────────────────
-  if (pIdx <= 0) return;
-  const TRAIL = 500;
-  ctx.save(); clp();
-
-  // OTA live (purple)
-  { const s = Math.max(0, pIdx - TRAIL);
-    ctx.beginPath();
-    for (let i = s; i <= Math.min(SIM.N - 1, pIdx); i++) {
-      const x = tx(SIM.t[i]), y = ty(SIM.yl[i]);
-      i === s ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
+  // Grid
+  ctx.save();clp();
+  for(let tv=0;tv<=T_SIM+1e-9;tv+=0.60){
+    const x=tx(tv);
+    ctx.strokeStyle='rgba(22,38,80,0.95)';ctx.lineWidth=1;
+    ctx.beginPath();ctx.moveTo(x,M.t);ctx.lineTo(x,M.t+PH);ctx.stroke();
+    for(let mt=tv+0.15;mt<tv+0.60-0.05;mt+=0.15){
+      if(mt>T_SIM)break;
+      ctx.strokeStyle='rgba(12,22,50,0.7)';ctx.lineWidth=0.4;
+      ctx.beginPath();ctx.moveTo(tx(mt),M.t);ctx.lineTo(tx(mt),M.t+PH);ctx.stroke();
     }
-    ctx.strokeStyle = 'rgba(204,119,255,0.95)'; ctx.lineWidth = 2.2;
-    ctx.shadowColor = 'rgba(204,119,255,0.35)'; ctx.shadowBlur = 8;
-    ctx.stroke(); ctx.shadowBlur = 0;
   }
+  V_TICKS.forEach(vv=>{
+    const y=ty(vv),hi=vv===0||vv===1;
+    ctx.strokeStyle=hi?'rgba(42,74,128,0.95)':'rgba(18,32,65,0.8)';ctx.lineWidth=hi?1.2:0.4;
+    ctx.beginPath();ctx.moveTo(M.l,y);ctx.lineTo(M.l+PW,y);ctx.stroke();
+  });
+  ctx.restore();
 
-  // Dynamic live — phase-coloured segments
-  const lSeg = (iSt, iEn, clr, glow) => {
-    if (iEn <= iSt || pIdx < iSt) return;
-    const s = Math.max(iSt, Math.max(0, pIdx - TRAIL));
-    const e = Math.min(iEn, pIdx);
-    if (s > e) return;
-    ctx.beginPath();
-    for (let i = s; i <= e; i++) {
-      const x = tx(SIM.t[i]), y = ty(SIM.yd[i]);
-      i === s ? ctx.moveTo(x, y) : ctx.lineTo(x, y);
-    }
-    ctx.strokeStyle = clr; ctx.lineWidth = 2.8;
-    ctx.shadowColor = glow; ctx.shadowBlur = 10;
-    ctx.stroke(); ctx.shadowBlur = 0;
-  };
-  for (let seg = 0; seg < 3; seg++) {
-    const i0 = seg * NP, iT = Math.min(SIM.N, i0 + NTR), i1 = Math.min(SIM.N, i0 + NP);
-    lSeg(i0, iT, 'rgba(255,85,68,0.97)',  'rgba(255,85,68,0.45)');
-    lSeg(iT, i1, 'rgba(34,170,255,0.97)', 'rgba(34,170,255,0.45)');
+  // ±1% band
+  ctx.save();clp();
+  [[0.99,1.01],[-0.01,0.01]].forEach(([lo,hi])=>{
+    ctx.fillStyle='rgba(255,204,68,0.045)';
+    ctx.fillRect(M.l,ty(hi),PW,ty(lo)-ty(hi));
+    ctx.strokeStyle='rgba(255,204,68,0.55)';ctx.lineWidth=1.2;ctx.setLineDash([5,5]);
+    [lo,hi].forEach(v=>{ctx.beginPath();ctx.moveTo(M.l,ty(v));ctx.lineTo(M.l+PW,ty(v));ctx.stroke()});
+    ctx.setLineDash([]);
+  });
+  mf(10,true);ctx.textAlign='right';ctx.fillStyle='rgba(255,204,68,0.90)';
+  ctx.fillText('±1%',M.l+PW-5,ty(1.01)-5);
+  ctx.restore();
+
+  // T_tr markers
+  ctx.save();clp();
+  for(let seg=0;seg<3;seg++){
+    const xT=tx(seg*T_PULSE+T_TR);
+    if(xT>M.l+PW)continue;
+    ctx.strokeStyle='rgba(120,160,255,0.65)';ctx.lineWidth=1.2;ctx.setLineDash([3,5]);
+    ctx.beginPath();ctx.moveTo(xT,M.t);ctx.lineTo(xT,M.t+PH);ctx.stroke();ctx.setLineDash([]);
+    mf(11,true);ctx.fillStyle='rgba(140,180,255,0.90)';ctx.textAlign='left';
+    ctx.fillText('T_tr',xT+3,M.t+14);
   }
+  ctx.restore();
 
-  // ── Live dots + labels ─────────────────────────
-  if (pIdx < SIM.N) {
-    const ph  = phaseOf(pIdx);
-    const PC  = ['#ff5544', '#22aaff', '#33ff99'];
-    const PG  = ['rgba(255,85,68,.60)', 'rgba(34,170,255,.60)', 'rgba(51,255,153,.60)'];
-    const cx  = tx(SIM.t[pIdx]);
-    const cyd = ty(SIM.yd[pIdx]);
-    const cyl = ty(SIM.yl[pIdx]);
+  // Settling time markers
+  ctx.save();clp();
+  if(SIM.ts_d){
+    const xs=tx(SIM.ts_d);
+    ctx.strokeStyle='rgba(51,255,153,0.70)';ctx.lineWidth=1.5;ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.moveTo(xs,M.t);ctx.lineTo(xs,M.t+PH);ctx.stroke();ctx.setLineDash([]);
+    mf(11,true);ctx.fillStyle='rgba(51,255,153,1.0)';ctx.textAlign='left';
+    ctx.shadowColor='rgba(51,255,153,0.5)';ctx.shadowBlur=6;
+    ctx.fillText(`t_s(dyn) = ${(SIM.ts_d*1000).toFixed(0)} ns`,xs+3,M.t+28);
+    ctx.shadowBlur=0;
+  }
+  if(SIM.ts_o){
+    const xs=tx(SIM.ts_o);
+    ctx.strokeStyle='rgba(204,119,255,0.65)';ctx.lineWidth=1.5;ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.moveTo(xs,M.t);ctx.lineTo(xs,M.t+PH);ctx.stroke();ctx.setLineDash([]);
+    mf(11,true);ctx.fillStyle='rgba(204,119,255,1.0)';ctx.textAlign='left';
+    ctx.shadowColor='rgba(204,119,255,0.5)';ctx.shadowBlur=6;
+    ctx.fillText(`t_s(OTA) = ${(SIM.ts_o*1000).toFixed(0)} ns`,xs+3,M.t+14);
+    ctx.shadowBlur=0;
+  }
+  ctx.restore();
 
-    // dynamic dot
-    ctx.beginPath(); ctx.arc(cx, cyd, 5.5, 0, Math.PI * 2);
-    ctx.fillStyle = PC[ph]; ctx.shadowColor = PG[ph]; ctx.shadowBlur = 18;
-    ctx.fill(); ctx.shadowBlur = 0;
-    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1.2; ctx.stroke();
+  // Phase region labels
+  ctx.save();clp();
+  mf(11,true);ctx.textAlign='center';
+  ctx.fillStyle='rgba(255,120,100,0.75)';ctx.fillText('NL',(tx(0)+tx(T_TR))/2,M.t+14);
+  ctx.fillStyle='rgba(60,180,255,0.75)'; ctx.fillText('L', (tx(T_TR)+tx(T_PULSE))/2,M.t+14);
+  ctx.restore();
+
+  // Axes
+  ctx.strokeStyle='rgba(42,68,140,0.9)';ctx.lineWidth=1.5;ctx.strokeRect(M.l,M.t,PW,PH);
+
+  // Axis tick labels
+  mf(11,true);ctx.fillStyle='#99c4de';ctx.textAlign='center';
+  for(let tv=0;tv<=T_SIM+1e-9;tv+=0.60)
+    ctx.fillText(tv.toFixed(2),tx(tv),M.t+PH+16);
+  mf(13,false);ctx.fillStyle='#b0d0e8';
+  ctx.fillText('Time (µs)',M.l+PW/2,H-3);
+  ctx.textAlign='right';mf(11,true);ctx.fillStyle='#99c4de';
+  V_TICKS.forEach(vv=>ctx.fillText(vv.toFixed(1),M.l-6,ty(vv)+4));
+  ctx.save();ctx.translate(13,M.t+PH/2);ctx.rotate(-Math.PI/2);
+  ctx.textAlign='center';mf(13,false);ctx.fillStyle='#b0d0e8';
+  ctx.fillText('V_out (V)',0,0);ctx.restore();
+
+  // Plot title
+  mf(13,false);ctx.textAlign='left';ctx.fillStyle='#d8f0ff';
+  ctx.fillText('Settling: Dynamic Amplifier (two-phase) vs Linear OTA',M.l+2,M.t-12);
+
+  // ══ DRAW FULL WAVEFORMS up to pIdx ══════════════
+  ctx.save();clp();
+  // OTA first (behind)
+  drawTrace(SIM.yl, pIdx, true);
+  // Dynamic amp on top
+  drawTrace(SIM.yd, pIdx, false);
+  ctx.restore();
+
+  // Live dots
+  if(pIdx>0&&pIdx<SIM.N){
+    ctx.save();clp();
+    const ph=phaseOf(pIdx);
+    const PC=['#ff5544','#22aaff','#33ff99'];
+    const PG=['rgba(255,85,68,.65)','rgba(34,170,255,.65)','rgba(51,255,153,.65)'];
+    const cx=tx(SIM.t[pIdx]);
+    const cyd=ty(SIM.yd[pIdx]),cyl=ty(SIM.yl[pIdx]);
 
     // OTA dot
-    ctx.beginPath(); ctx.arc(cx, cyl, 5, 0, Math.PI * 2);
-    ctx.fillStyle = 'rgba(204,119,255,0.97)';
-    ctx.shadowColor = 'rgba(204,119,255,.60)'; ctx.shadowBlur = 14;
-    ctx.fill(); ctx.shadowBlur = 0;
-    ctx.strokeStyle = '#ffffff'; ctx.lineWidth = 1; ctx.stroke();
+    ctx.beginPath();ctx.arc(cx,cyl,5.5,0,Math.PI*2);
+    ctx.fillStyle='#cc77ff';ctx.shadowColor='rgba(204,119,255,.70)';ctx.shadowBlur=16;
+    ctx.fill();ctx.shadowBlur=0;
+    ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;ctx.stroke();
 
-    // Voltage labels — bright, larger
-    mf(11, true); ctx.textAlign = 'left';
-    ctx.fillStyle = PC[ph];
-    ctx.shadowColor = PG[ph]; ctx.shadowBlur = 6;
-    ctx.fillText(`D: ${SIM.yd[pIdx].toFixed(4)} V`, cx + 9, cyd - 5);
-    ctx.shadowBlur = 0;
-    ctx.fillStyle = '#cc88ff';
-    ctx.fillText(`L: ${SIM.yl[pIdx].toFixed(4)} V`, cx + 9, cyl + 15);
+    // Dyn dot (on top)
+    ctx.beginPath();ctx.arc(cx,cyd,6,0,Math.PI*2);
+    ctx.fillStyle=PC[ph];ctx.shadowColor=PG[ph];ctx.shadowBlur=20;
+    ctx.fill();ctx.shadowBlur=0;
+    ctx.strokeStyle='#ffffff';ctx.lineWidth=1.5;ctx.stroke();
+
+    // Labels
+    mf(12,true);ctx.textAlign='left';
+    ctx.fillStyle=PC[ph];ctx.shadowColor=PG[ph];ctx.shadowBlur=8;
+    ctx.fillText(`D: ${SIM.yd[pIdx].toFixed(4)} V`,cx+10,cyd-6);ctx.shadowBlur=0;
+    ctx.fillStyle='#dd99ff';
+    ctx.fillText(`L: ${SIM.yl[pIdx].toFixed(4)} V`,cx+10,cyl+16);
 
     // Δ bracket
-    const dl = Math.abs(SIM.yd[pIdx] - SIM.yl[pIdx]);
-    if (dl > 0.012) {
-      const mY = (cyd + cyl) / 2;
-      ctx.strokeStyle = 'rgba(180,200,255,.30)'; ctx.lineWidth = 1; ctx.setLineDash([2, 3]);
-      ctx.beginPath(); ctx.moveTo(cx - 22, cyd); ctx.lineTo(cx - 22, cyl); ctx.stroke();
-      ctx.setLineDash([]);
-      mf(10, true); ctx.fillStyle = 'rgba(180,200,255,.75)'; ctx.textAlign = 'right';
-      ctx.fillText(`Δ ${dl.toFixed(3)}`, cx - 25, mY + 4);
+    const dl=Math.abs(SIM.yd[pIdx]-SIM.yl[pIdx]);
+    if(dl>0.012){
+      const mY=(cyd+cyl)/2;
+      ctx.strokeStyle='rgba(180,200,255,.35)';ctx.lineWidth=1;ctx.setLineDash([2,3]);
+      ctx.beginPath();ctx.moveTo(cx-24,cyd);ctx.lineTo(cx-24,cyl);ctx.stroke();ctx.setLineDash([]);
+      mf(10,true);ctx.fillStyle='rgba(200,220,255,.80)';ctx.textAlign='right';
+      ctx.fillText(`Δ ${dl.toFixed(3)}`,cx-27,mY+4);
     }
+    ctx.restore();
 
     // Update phase badge + sidebar
-    const phaseNames = ['LARGE-SIGNAL', 'SMALL-SIGNAL', 'SETTLED'];
-    const badgeClasses = ['badge-p1', 'badge-p2', 'badge-ss'];
-    const badge = document.getElementById('phase-badge');
-    badge.textContent = phaseNames[ph];
-    badge.className = badgeClasses[ph];
-    ['ph0', 'ph1', 'ph2'].forEach((id, i) =>
-      document.getElementById(id).classList.toggle('on', i === ph));
+    const names=['LARGE-SIGNAL','SMALL-SIGNAL','SETTLED'];
+    const bClasses=['badge-p1','badge-p2','badge-ss'];
+    const badge=document.getElementById('phase-badge');
+    badge.textContent=names[ph];badge.className=bClasses[ph];
+    ['ph0','ph1','ph2'].forEach((id,i)=>document.getElementById(id).classList.toggle('on',i===ph));
   }
 
-  ctx.restore();
-
-  // Subtle scanlines
-  ctx.save(); clp();
-  for (let y = M.t; y < M.t + PH; y += 4) {
-    ctx.fillStyle = 'rgba(0,0,0,0.025)'; ctx.fillRect(M.l, y, PW, 1);
-  }
+  // Scanlines
+  ctx.save();clp();
+  for(let y=M.t;y<M.t+PH;y+=4){ctx.fillStyle='rgba(0,0,0,0.025)';ctx.fillRect(M.l,y,PW,1)}
   ctx.restore();
 
   // Crosshair
-  if (mX >= M.l && mX <= M.l + PW && mY >= M.t && mY <= M.t + PH) {
-    ctx.save(); clp();
-    ctx.strokeStyle = 'rgba(100,160,230,.20)'; ctx.lineWidth = .8; ctx.setLineDash([3, 4]);
-    ctx.beginPath(); ctx.moveTo(mX, M.t); ctx.lineTo(mX, M.t + PH); ctx.stroke();
-    ctx.beginPath(); ctx.moveTo(M.l, mY); ctx.lineTo(M.l + PW, mY); ctx.stroke();
-    ctx.setLineDash([]); ctx.restore();
+  if(mX>=M.l&&mX<=M.l+PW&&mY>=M.t&&mY<=M.t+PH){
+    ctx.save();clp();
+    ctx.strokeStyle='rgba(120,180,255,.22)';ctx.lineWidth=.8;ctx.setLineDash([3,4]);
+    ctx.beginPath();ctx.moveTo(mX,M.t);ctx.lineTo(mX,M.t+PH);ctx.stroke();
+    ctx.beginPath();ctx.moveTo(M.l,mY);ctx.lineTo(M.l+PW,mY);ctx.stroke();
+    ctx.setLineDash([]);ctx.restore();
   }
 }
 
-// ═══════════════════════════════════════════════════
+// ═══════════════════════════════════════════
 //  ANIMATION
-// ═══════════════════════════════════════════════════
-let playing = true, speed = 0.5, pIdx = 0, lastTs = null, acc = 0;
-const MS_BASE = 10000 / (T_SIM / DT);  // ~10 s full sweep at 1×
+// ═══════════════════════════════════════════
+let playing=true,speed=0.5,pIdx=0,lastTs=null,acc=0;
+const MS_BASE=10000/(T_SIM/DT);
 
-function loop(ts) {
-  if (lastTs !== null && playing) {
-    const dt = ts - lastTs; acc += dt;
-    const steps = Math.floor(acc / (MS_BASE / speed));
-    acc -= steps * (MS_BASE / speed);
-    pIdx = Math.min(SIM.N - 1, pIdx + steps);
-    if (pIdx >= SIM.N - 1) setTimeout(() => { pIdx = 0; acc = 0; lastTs = null; }, 1200);
+function loop(ts){
+  if(lastTs!==null&&playing){
+    const dt=ts-lastTs;acc+=dt;
+    const steps=Math.floor(acc/(MS_BASE/speed));
+    acc-=steps*(MS_BASE/speed);
+    pIdx=Math.min(SIM.N-1,pIdx+steps);
+    if(pIdx>=SIM.N-1)setTimeout(()=>{pIdx=0;acc=0;lastTs=null;},1200);
   }
-  lastTs = ts;
-  draw(pIdx);
-  document.getElementById('td').textContent =
-    `t = ${(pIdx < SIM.N ? SIM.t[pIdx] : T_SIM).toFixed(3)} µs`;
+  lastTs=ts;draw(pIdx);
+  document.getElementById('td').textContent=
+    `t = ${(pIdx<SIM.N?SIM.t[pIdx]:T_SIM).toFixed(3)} µs`;
   requestAnimationFrame(loop);
 }
 
-// ── Controls ────────────────────────────────────────
-function togglePlay() {
-  playing = !playing; lastTs = null; acc = 0;
-  const b = document.getElementById('bPl');
-  b.textContent = playing ? '⏸ PAUSE' : '▶ PLAY';
-  b.classList.toggle('on', playing);
+function togglePlay(){
+  playing=!playing;lastTs=null;acc=0;
+  const b=document.getElementById('bPl');
+  b.textContent=playing?'⏸ PAUSE':'▶ PLAY';b.classList.toggle('on',playing);
 }
-function doReset() {
-  pIdx = 0; acc = 0; lastTs = null;
-  if (!playing) { playing = true; document.getElementById('bPl').textContent = '⏸ PAUSE'; document.getElementById('bPl').classList.add('on'); }
+function doReset(){
+  pIdx=0;acc=0;lastTs=null;
+  if(!playing){playing=true;document.getElementById('bPl').textContent='⏸ PAUSE';document.getElementById('bPl').classList.add('on');}
 }
-function doExport() {
-  const a = document.createElement('a');
-  a.download = 'settling_analyser_CAC2025.png';
-  a.href = canvas.toDataURL('image/png'); a.click();
+function doExport(){
+  const a=document.createElement('a');
+  a.download='settling_analyser_CAC2025.png';a.href=canvas.toDataURL('image/png');a.click();
 }
-function setSpd(v, id) {
-  speed = v;
-  ['s05','s1','s2','s5'].forEach(i => document.getElementById(i).classList.remove('on'));
+function setSpd(v,id){
+  speed=v;['s05','s1','s2','s5'].forEach(i=>document.getElementById(i).classList.remove('on'));
   document.getElementById(id).classList.add('on');
 }
 
-canvas.addEventListener('mousemove', e => {
-  const r = canvas.getBoundingClientRect();
-  mX = e.clientX - r.left; mY = e.clientY - r.top;
-  const mt = itx(mX);
-  if (mt >= 0 && mt <= T_SIM && SIM.N) {
-    const i = Math.min(SIM.N - 1, Math.round(mt / DT));
-    document.getElementById('cur').textContent =
-      `t = ${SIM.t[i].toFixed(4)} µs  |  V_dyn = ${SIM.yd[i].toFixed(4)} V  |  V_ota = ${SIM.yl[i].toFixed(4)} V  |  Δ = ${Math.abs(SIM.yd[i]-SIM.yl[i]).toFixed(4)} V`;
+canvas.addEventListener('mousemove',e=>{
+  const r=canvas.getBoundingClientRect();mX=e.clientX-r.left;mY=e.clientY-r.top;
+  const mt=itx(mX);
+  if(mt>=0&&mt<=T_SIM&&SIM.N){
+    const i=Math.min(SIM.N-1,Math.round(mt/DT));
+    document.getElementById('cur').textContent=
+      `t=${SIM.t[i].toFixed(4)} µs  |  V_dyn=${SIM.yd[i].toFixed(4)} V  |  V_ota=${SIM.yl[i].toFixed(4)} V  |  Δ=${Math.abs(SIM.yd[i]-SIM.yl[i]).toFixed(4)} V`;
   }
 });
-canvas.addEventListener('mouseleave', () => {
-  mX = mY = -1;
-  document.getElementById('cur').textContent = 'Hover for readout · Click to seek';
-});
-canvas.addEventListener('click', e => {
-  const r = canvas.getBoundingClientRect();
-  const mt = itx(e.clientX - r.left);
-  if (mt >= 0 && mt <= T_SIM && SIM.N) { pIdx = Math.min(SIM.N - 1, Math.round(mt / DT)); acc = 0; }
+canvas.addEventListener('mouseleave',()=>{mX=mY=-1;document.getElementById('cur').textContent='Hover for readout · Click to seek'});
+canvas.addEventListener('click',e=>{
+  const r=canvas.getBoundingClientRect();const mt=itx(e.clientX-r.left);
+  if(mt>=0&&mt<=T_SIM&&SIM.N){pIdx=Math.min(SIM.N-1,Math.round(mt/DT));acc=0;}
 });
 
-window.addEventListener('resize', resize);
-setTimeout(() => { resize(); runSim(); requestAnimationFrame(loop); }, 40);
+window.addEventListener('resize',resize);
+setTimeout(()=>{resize();runSim();requestAnimationFrame(loop);},40);
 </script>
 </body>
 </html>
